@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Symulator instalacji elektrycznej – puszki i łączniki</title>
+<style>
+:root{--bg:#f4f1ea;--card:#fff;--ink:#1d1d1b;--mut:#6b675f;--line:#d9d3c7;--acc:#d9662b}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);-webkit-tap-highlight-color:transparent}
+.wrap{max-width:760px;margin:0 auto;padding:14px 12px 40px}
+h1{font-size:1.25rem;margin:4px 0 2px}
+.sub{color:var(--mut);font-size:.88rem;margin:0 0 10px}
+.nav{display:flex;gap:6px;align-items:center;margin-bottom:8px}
+.nav select{flex:1;min-width:0;font-size:.92rem;padding:9px 8px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink)}
+.nav button{border:1px solid var(--line);background:#fff;border-radius:10px;width:42px;height:40px;font-size:1rem;cursor:pointer;color:var(--ink)}
+.prog{display:flex;align-items:center;gap:8px;font-size:.8rem;color:var(--mut);margin-bottom:10px}
+.prog .barw{flex:1;height:7px;background:#e3ddd0;border-radius:9px;overflow:hidden}
+.prog .barf{height:100%;background:#1d8a4a;width:0;transition:width .3s}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px}
+.head{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.head h2{font-size:1rem;margin:0 0 4px}
+.lvl{font-size:.72rem;padding:2px 8px;border-radius:999px;background:#eee;white-space:nowrap}
+.desc{font-size:.88rem;line-height:1.45;margin:0 0 6px}
+.desc b{color:var(--acc)}
+svg{width:100%;height:auto;display:block;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.term,.wire{cursor:pointer}
+.bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:10px 0}
+.bar .lbl{font-size:.8rem;color:var(--mut);margin-right:2px}
+.col{width:34px;height:34px;border-radius:50%;border:3px solid transparent;cursor:pointer;padding:0;outline:2px solid var(--line)}
+.col.on{border-color:#fff;outline:3px solid var(--ink)}
+.btn{border:none;border-radius:10px;padding:10px 12px;font-size:.9rem;font-weight:600;cursor:pointer;background:#e9e4da;color:var(--ink)}
+.btn.pri{background:var(--acc);color:#fff}
+.btn.pow{background:#2b2b2b;color:#fff}
+.btn.pow.live{background:#c62828}
+.msg{margin-top:8px;font-size:.88rem;line-height:1.45}
+.msg div{padding:8px 10px;border-radius:9px;margin-bottom:6px}
+.m-ok{background:#e3f4ea;color:#0f5c30}
+.m-err{background:#fdecea;color:#8e1c1c}
+.m-warn{background:#fff3df;color:#7a4a00}
+.m-info{background:#eef1f6;color:#2c3b52}
+.m-hint{background:#f3ecff;color:#45237a}
+.hint{font-size:.8rem;color:var(--mut);margin-top:12px;line-height:1.45}
+.rules{margin-top:12px}
+.rules summary{cursor:pointer;font-weight:600;font-size:.92rem}
+.rules ul{padding-left:18px;font-size:.86rem;line-height:1.5}
+@keyframes pulse{0%{r:11}50%{r:15}100%{r:11}}
+.sel{animation:pulse 1s infinite}
+@keyframes flow{to{stroke-dashoffset:-20}}
+.live{animation:flow .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{animation:spin .5s linear infinite;transform-box:fill-box;transform-origin:center}
+@keyframes shake{0%,100%{transform:rotate(-12deg)}50%{transform:rotate(12deg)}}
+.shake{animation:shake .15s linear infinite;transform-box:fill-box;transform-origin:50% 0}
+.meta{display:flex;gap:10px;font-size:.82rem;color:var(--mut);margin-bottom:4px}
+.meta .st{color:#e0a100;font-size:1rem;letter-spacing:1px}
+.rank{display:flex;justify-content:space-between;align-items:center;background:linear-gradient(90deg,#2b2b2b,#4a3b2a);color:#fff;border-radius:12px;padding:8px 12px;margin-bottom:8px;font-size:.85rem}
+.rank b{font-size:.95rem}
+.exam{background:#1d3557;color:#fff;border-radius:12px;padding:9px 12px;margin-bottom:8px;font-size:.88rem;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.btn.on{background:#1d3557;color:#fff}
+.sec{margin-top:12px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.sec summary{cursor:pointer;font-weight:600;font-size:.95rem}
+.qopt{display:block;width:100%;text-align:left;margin:6px 0;padding:10px;border-radius:10px;border:1px solid var(--line);background:#faf8f3;font-size:.9rem;cursor:pointer;color:var(--ink)}
+.qopt.good{background:#e3f4ea;border-color:#1d8a4a}.qopt.bad{background:#fdecea;border-color:#c62828}
+.gl dt{font-weight:700;margin-top:8px;font-size:.88rem}.gl dd{margin:2px 0 0 0;font-size:.85rem;color:#444;line-height:1.4}
+.conf{position:fixed;top:-12px;width:9px;height:14px;z-index:99;pointer-events:none;animation:fall 2.2s ease-in forwards}
+@keyframes fall{to{transform:translateY(105vh) rotate(720deg);opacity:.7}}
+.result{text-align:center;padding:10px}.result .big{font-size:2.6rem;font-weight:800}
+.meter{background:#1e2326;color:#9dff6a;border-radius:12px;padding:10px 12px;margin-bottom:8px;font-family:ui-monospace,Menlo,monospace;border:3px solid #f2c200}
+.meter .lcd{font-size:1.7rem;font-weight:700;background:#0f1412;border-radius:8px;padding:6px 10px;margin:6px 0;text-align:right}
+.meter small{color:#cfd6d2;font-family:system-ui,sans-serif;font-size:.78rem}
+[hidden]{display:none!important}
+.spinr{animation-direction:reverse}
+.btn.xs{padding:7px 10px;font-size:.82rem}.btn.xs.on{background:var(--ink);color:#fff}
+.mm{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}.mm button{flex:1;border:1px solid #556;background:#2c3338;color:#cfd6d2;border-radius:7px;padding:6px 4px;font-size:.72rem;cursor:pointer}.mm button.on{background:#f2c200;color:#111;border-color:#f2c200}
+.rk{width:100%;border-collapse:collapse;font-size:.86rem;margin-top:8px}.rk td,.rk th{padding:6px 4px;border-bottom:1px solid #eee;text-align:left}.rk tr.me{background:#fff6d6}
+.rk th{font-size:.75rem;color:#6b675f}
+.inp{padding:9px 10px;border:1px solid var(--line);border-radius:10px;font-size:.9rem;flex:1;min-width:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>⚡ Symulator łączenia przewodów</h1>
+<p class="sub">Puszki, łączniki, rozdzielnica, trójfaza 400 V, projekt mieszkania i pomiary – <span id="cnt"></span> zadań do nauki.</p>
+
+<div class="nav">
+  <button id="bPrev" aria-label="Poprzednie">◀</button>
+  <select id="sel"></select>
+  <button id="bNext" aria-label="Następne">▶</button>
+</div>
+<div class="rank" id="rank"></div>
+<div id="examBar" class="exam" hidden></div>
+<div id="meter" class="meter" hidden></div>
+<div class="prog"><span id="progT">Ukończone: 0</span><div class="barw"><div class="barf" id="progF"></div></div></div>
+
+<div class="card">
+  <div class="head"><h2 id="title"></h2><span class="lvl" id="lvl"></span></div>
+  <div class="meta"><span class="st" id="stars"></span><span id="tmr"></span></div>
+  <p class="desc" id="desc"></p>
+  <svg id="svg" viewBox="0 0 360 535"></svg>
+</div>
+
+<div class="bar">
+  <span class="lbl">Kolor przewodu:</span>
+  <div id="colors" style="display:flex;gap:8px"></div>
+</div>
+<div class="bar">
+  <span class="lbl">Przekrój:</span>
+  <button class="btn xs on" data-x="1.5">1,5 mm²</button>
+  <button class="btn xs" data-x="2.5">2,5 mm²</button>
+  <button class="btn xs" id="bAllX">⇄ ustaw na wszystkich</button>
+</div>
+<div class="bar">
+  <button class="btn pri" id="bCheck">✔ Sprawdź</button>
+  <button class="btn pow" id="bPow">⏻ Włącz zasilanie</button>
+  <button class="btn" id="bUndo">↶ Cofnij</button>
+  <button class="btn" id="bClear">Wyczyść</button>
+  <button class="btn" id="bHint">❓ Podpowiedź</button>
+  <button class="btn" id="bSol">💡 Rozwiązanie</button>
+</div>
+<div class="bar">
+  <button class="btn" id="bProbe">🪛 Próbnik / miernik</button>
+  <button class="btn" id="bExam">🎓 Egzamin</button>
+  <button class="btn" id="bSkip" hidden>⏭ Pomiń</button>
+  <button class="btn" id="bMute">🔊 Dźwięk</button>
+</div>
+<div class="msg" id="msg"></div>
+
+<p class="hint"><b>Jak używać:</b> wybierz kolor, dotknij zacisku, potem drugiego – powstanie przewód. Pomarańczowe złączki (Z1, Z2…) w puszce przyjmują dowolną liczbę przewodów. Dotknięcie przewodu go usuwa. Klawisze łączników przełączasz dotknięciem.</p>
+
+<details class="rules">
+<summary>📘 Najważniejsze zasady</summary>
+<ul>
+<li><b>Łącznik zawsze przerywa przewód fazowy L</b>, nigdy neutralny N – inaczej wyłączona lampa nadal jest pod napięciem.</li>
+<li>Przewód <b>neutralny N</b> (niebieski) idzie z zasilania prosto do odbiorników.</li>
+<li>Przewód <b>ochronny PE</b> (żółto-zielony) łączymy ze wszystkimi odbiornikami, które mają zacisk PE. Nigdy nie łączymy go z N ani L.</li>
+<li>Przewody fazowe: brązowy, czarny lub szary. Niebieskiego i żółto-zielonego nie używa się jako fazy.</li>
+<li><b>Przekrój przewodu</b>: obwód zabezpieczony B10 – min. 1,5 mm², obwód 16 A (B16, C16) – min. <b>2,5 mm²</b>. Grubszy przewód działa w symulatorze jako cieńszy na rysunku – ale wybierasz go przyciskiem „Przekrój”.</li>
+<li><b>Złączki WAGO</b> mają ograniczoną liczbę miejsc (kropki pod złączką): na 3 albo 5 przewodów.</li>
+<li><b>Trójfaza</b>: L1 brązowy, L2 czarny, L3 szary. Między fazami 400 V, faza–N 230 V. Zamiana dwóch faz zmienia kierunek obrotów silnika.</li>
+<li><b>Pomiary ochronne</b>: izolacja ≥ 1 MΩ (bez napięcia), impedancja pętli Zs ≤ 230 V / (5 × In) dla wyłączników B, różnicówka 30 mA ma zadziałać w ≤ 300 ms.</li>
+<li><b>Łącznik schodowy</b>: L do zacisku wspólnego pierwszego łącznika, dwa przewody korespondencyjne między łącznikami, zacisk wspólny drugiego do lampy.</li>
+<li><b>Łącznik krzyżowy</b> wstawia się między dwa schodowe – w przewody korespondencyjne (wejścia 1–2, wyjścia 3–4).</li>
+<li><b>Łącznik świecznikowy</b>: wspólny zacisk L, osobne wyjścia 1 i 2.</li>
+<li><b>Czujnik ruchu</b> potrzebuje stałego zasilania L i N, a jego wyjście ↑ idzie do lampy.</li>
+<li>W gnieździe fazę podłącza się do zacisku L, a PE do bolca ochronnego.</li>
+</ul>
+<p style="font-size:.8rem;color:#6b675f">To model edukacyjny. Prace przy prawdziwej instalacji wykonuje osoba z uprawnieniami (SEP), po wyłączeniu zasilania i sprawdzeniu braku napięcia.</p>
+</details>
+
+<details class="sec" id="rankSec">
+<summary>🏆 Ranking – rywalizacja</summary>
+<div id="rankBox"><p class="hint">Ładowanie rankingu…</p></div>
+</details>
+
+<details class="sec" id="quizSec">
+<summary>🧠 Quiz wiedzy (<span id="qn"></span> pytań)</summary>
+<div id="quiz"></div>
+</details>
+
+<details class="sec">
+<summary>📖 Słowniczek elektryka</summary>
+<dl class="gl" id="gloss"></dl>
+</details>
+
+<details class="sec">
+<summary>⭐ Gwiazdki, rangi i egzamin – jak to działa?</summary>
+<ul style="font-size:.86rem;line-height:1.5;padding-left:18px">
+<li>⭐⭐⭐ – zadanie zrobione za pierwszym sprawdzeniem, bez podpowiedzi.</li>
+<li>⭐⭐ – z podpowiedzią albo po 1–2 nieudanych sprawdzeniach. ⭐ – po większej liczbie prób.</li>
+<li>Gwiazdki zbierają się na rangi: Praktykant → Pomocnik → Elektryk → Starszy elektryk → Mistrz → Inspektor SEP.</li>
+<li>🎓 Egzamin: 5 losowych zadań, bez podpowiedzi i rozwiązań, na czas. Na końcu ocena w skali szkolnej 1–6.</li>
+<li>🪛 Miernik ma 4 tryby: <b>Multimetr</b> (napięcie / ciągłość), <b>Izolacja</b> (bez napięcia, wynik w MΩ), <b>Pętla Zs</b> (faza ↔ PE pod napięciem) i <b>Test RCD</b> (dotknij punktu z fazą za różnicówką).</li>
+<li>🏆 Ranking: wpisz ksywkę i zapisz wynik – zobaczysz go razem z innymi osobami, którym udostępnisz stronę.</li>
+</ul>
+</details>
+</div>
+
+<script>
+const COLORS=[
+ {id:'br',name:'brązowy',hex:'#7a4a24',role:'L'},
+ {id:'bk',name:'czarny',hex:'#222',role:'L'},
+ {id:'gr',name:'szary',hex:'#8a8a8a',role:'L'},
+ {id:'bl',name:'niebieski',hex:'#1f6fd1',role:'N'},
+ {id:'yg',name:'żółto-zielony',hex:'#e8c900',role:'PE'}
+];
+const HUBSETS={
+ 6:[[125,215],[180,215],[235,215],[125,300],[180,300],[235,300]],
+ 9:[[125,200],[180,200],[235,200],[125,258],[180,258],[235,258],[125,316],[180,316],[235,316]],
+ 12:[[108,200],[156,200],[204,200],[252,200],[108,258],[156,258],[204,258],[252,258],[108,316],[156,316],[204,316],[252,316]]
+};
+// terminal sets per device kind: [key,label,role]
+const KIND={
+ supply:[['L','L','L'],['N','N','N'],['PE','PE','PE']],
+ lamp:[['L','L','L'],['N','N','N'],['PE','PE','PE']],
+ socket:[['L','L','L'],['N','N','N'],['PE','PE','PE']],
+ fan:[['L','L','L'],['N','N','N'],['PE','PE','PE']],
+ bell:[['L','L','L'],['N','N','N']],
+ chand:[['L1','L1','L'],['L2','L2','L'],['N','N','N'],['PE','PE','PE']],
+ single:[['L','L','L'],['1','1','L']],
+ button:[['L','L','L'],['1','1','L']],
+ double:[['L','L','L'],['1','1','L'],['2','2','L']],
+ twoway:[['L','L','L'],['1','1','L'],['2','2','L']],
+ cross:[['1','1','L'],['2','2','L'],['3','3','L'],['4','4','L']],
+ pir:[['L','L','L'],['N','N','N'],['O','↑','L']],
+ card:[['L','L','L'],['O','↑','L']],
+ dimmer:[['L','L','L'],['1','↑','L']],
+ thermo:[['L','L','L'],['1','1','L']],
+ dusk:[['L','L','L'],['N','N','N'],['O','↑','L']],
+ dp:[['L','L','L'],['N','N','N'],['1','L↑','L'],['2','N↑','N']],
+ heater:[['L','L','L'],['N','N','N'],['PE','PE','PE']],
+ mcb:[['I','we','L'],['O','wy','L']],
+ mcb3:[['1','1','L'],['3','3','L'],['5','5','L'],['2','2','L'],['4','4','L'],['6','6','L']],
+ supply3:[['L1','L1','L'],['L2','L2','L'],['L3','L3','L'],['N','N','N'],['PE','PE','PE']],
+ socket3:[['L1','L1','L'],['L2','L2','L'],['L3','L3','L'],['N','N','N'],['PE','PE','PE']],
+ motor:[['U','U','L'],['V','V','L'],['W','W','L'],['PE','PE','PE']],
+ rcd:[['L','L','L'],['N','N','N'],['LO','L↓','L'],['NO','N↓','N']],
+ timer:[['L','L','L'],['N','N','N'],['S','S','L'],['O','↑','L']],
+ bist:[['L','L','L'],['N','N','N'],['S','S','L'],['O','↑','L']]
+};
+const LOADK=['lamp','socket','fan','bell','chand','heater','socket3','motor'];
+const SWK=['single','button','double','twoway','cross','pir'];
+const D=(id,kind,title,row,col)=>({id,kind,title,row,col});
+const W=(list)=>list.map(x=>{const [a,b,c]=x.split(' ');return [a,b,c]});
+const SUP=(c)=>D('sup','supply','Zasilanie '+c,'t',0);
+
+const SC=[
+// ---------- PODSTAWY ----------
+{lvl:'Podstawy',name:'Łącznik + lampa',
+ desc:'Podłącz <b>łącznik jednobiegunowy</b> sterujący jedną lampą. Faza przez łącznik, N i PE bezpośrednio do lampy.',
+ dev:[SUP('B10'),D('lamp1','lamp','Lampa','t',1),D('S','single','Łącznik','b',0)],
+ ok:(s,l)=>l[0]===!!s[0],expect:'lampa świeci tylko przy włączonym łączniku',
+ hint:'Złączka 1: L zasilania + L łącznika. Złączka 2: wyjście 1 łącznika + L lampy. N i PE z zasilania prosto do lampy przez osobne złączki.',
+ sol:W(['sup.L Z1 br','S.L Z1 br','S.1 Z2 bk','lamp1.L Z2 bk','sup.N Z4 bl','lamp1.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg'])},
+{lvl:'Podstawy',name:'Jedno gniazdo',
+ desc:'Zasil <b>gniazdo z bolcem ochronnym</b> przez puszkę. Gniazdo ma być stale pod napięciem.',
+ dev:[SUP('B16'),D('g1','socket','Gniazdo','t',1)],
+ ok:(s,l)=>l[0],expect:'gniazdo stale pod napięciem',
+ hint:'Trzy złączki: osobno L, N i PE. Każda żyła z zasilania łączy się z tą samą żyłą gniazda.',
+ sol:W(['sup.L Z1 br','g1.L Z1 br','sup.N Z4 bl','g1.N Z4 bl','sup.PE Z5 yg','g1.PE Z5 yg'])},
+{lvl:'Podstawy',name:'Dwa gniazda',
+ desc:'Obwód gniazd: zasil <b>dwa gniazda</b> z jednej puszki. Oba stale pod napięciem, PE obowiązkowo.',
+ dev:[SUP('B16'),D('g1','socket','Gniazdo 1','b',0),D('g2','socket','Gniazdo 2','b',1)],
+ ok:(s,l)=>l[0]&&l[1],expect:'oba gniazda pod napięciem',
+ hint:'Jedna złączka na wszystkie L (3 przewody), jedna na wszystkie N, jedna na wszystkie PE.',
+ sol:W(['sup.L Z1 br','g1.L Z1 br','g2.L Z1 br','sup.N Z4 bl','g1.N Z4 bl','g2.N Z4 bl','sup.PE Z5 yg','g1.PE Z5 yg','g2.PE Z5 yg'])},
+{lvl:'Podstawy',name:'Łącznik + 2 lampy',
+ desc:'Jeden <b>łącznik jednobiegunowy</b> włącza <b>dwie lampy jednocześnie</b> (połączone równolegle).',
+ dev:[SUP('B10'),D('lamp1','lamp','Lampa 1','t',1),D('S','single','Łącznik','b',0),D('lamp2','lamp','Lampa 2','b',1)],
+ ok:(s,l)=>l[0]===!!s[0]&&l[1]===!!s[0],expect:'obie lampy świecą razem po włączeniu łącznika',
+ hint:'Wyjście 1 łącznika idzie do jednej złączki, z której wychodzą przewody do L obu lamp. N i PE – wspólne złączki dla obu lamp.',
+ sol:W(['sup.L Z1 br','S.L Z1 br','S.1 Z2 bk','lamp1.L Z2 bk','lamp2.L Z2 bk','sup.N Z4 bl','lamp1.N Z4 bl','lamp2.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg','lamp2.PE Z5 yg'])},
+{lvl:'Podstawy',name:'Gniazdo sterowane łącznikiem',
+ desc:'Gniazdo, które <b>włącza się łącznikiem</b> (np. do lampki stojącej). Napięcie w gnieździe tylko po włączeniu łącznika.',
+ dev:[SUP('B16'),D('g1','socket','Gniazdo','t',1),D('S','single','Łącznik','b',0)],
+ ok:(s,l)=>l[0]===!!s[0],expect:'gniazdo pod napięciem tylko przy włączonym łączniku',
+ hint:'Tak samo jak lampa: L przez łącznik do zacisku L gniazda, N i PE bezpośrednio.',
+ sol:W(['sup.L Z1 br','S.L Z1 br','S.1 Z2 bk','g1.L Z2 bk','sup.N Z4 bl','g1.N Z4 bl','sup.PE Z5 yg','g1.PE Z5 yg'])},
+{lvl:'Podstawy',name:'Lampa i gniazdo w jednej puszce',
+ desc:'Z jednej puszki zasil <b>lampę z łącznikiem</b> oraz <b>gniazdo stale pod napięciem</b>.',
+ dev:[SUP('B16'),D('lamp1','lamp','Lampa','t',1),D('S','single','Łącznik','b',0),D('g1','socket','Gniazdo','b',1)],
+ ok:(s,l)=>l[0]===!!s[0]&&l[1],expect:'lampa sterowana łącznikiem, gniazdo zawsze pod napięciem',
+ hint:'Złączka L: zasilanie + łącznik + gniazdo. Osobna złączka: wyjście łącznika + L lampy. N i PE wspólne dla lampy i gniazda.',
+ sol:W(['sup.L Z1 br','S.L Z1 br','g1.L Z1 br','S.1 Z2 bk','lamp1.L Z2 bk','sup.N Z4 bl','lamp1.N Z4 bl','g1.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg','g1.PE Z5 yg'])},
+// ---------- ŚREDNIE ----------
+{lvl:'Średnie',name:'Dwa pomieszczenia',cols:3,
+ desc:'Z jednej puszki zasil <b>dwie lampy</b> w różnych pomieszczeniach, każdą z <b>własnym łącznikiem</b>.',
+ dev:[SUP('B10'),D('lamp1','lamp','Lampa kuchnia','t',1),D('lamp2','lamp','Lampa korytarz','t',2),D('S1','single','Łącznik kuchnia','b',0),D('S2','single','Łącznik korytarz','b',2)],
+ ok:(s,l)=>l[0]===!!s[0]&&l[1]===!!s[1],expect:'każdy łącznik steruje swoją lampą',
+ hint:'Faza z zasilania do obu łączników (jedna złączka). Każde wyjście łącznika w osobnej złączce do swojej lampy.',
+ sol:W(['sup.L Z1 br','S1.L Z1 br','S2.L Z1 br','S1.1 Z2 bk','lamp1.L Z2 bk','S2.1 Z3 gr','lamp2.L Z3 gr','sup.N Z4 bl','lamp1.N Z4 bl','lamp2.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg','lamp2.PE Z5 yg'])},
+{lvl:'Średnie',name:'Łącznik świecznikowy + 2 lampy',
+ desc:'<b>Łącznik świecznikowy</b> (podwójny): klawisz 1 steruje lampą 1, klawisz 2 lampą 2.',
+ dev:[SUP('B10'),D('lamp1','lamp','Lampa 1','t',1),D('S','double','Łącznik świecznikowy','b',0),D('lamp2','lamp','Lampa 2','b',1)],
+ ok:(s,l)=>l[0]===!!s[0]&&l[1]===!!s[1],expect:'klawisz 1 steruje lampą 1, klawisz 2 lampą 2',
+ hint:'L do wspólnego zacisku L łącznika. Wyjście 1 → lampa 1, wyjście 2 → lampa 2 (osobne złączki).',
+ sol:W(['sup.L Z1 br','S.L Z1 br','S.1 Z2 bk','lamp1.L Z2 bk','S.2 Z3 gr','lamp2.L Z3 gr','sup.N Z4 bl','lamp1.N Z4 bl','lamp2.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg','lamp2.PE Z5 yg'])},
+{lvl:'Średnie',name:'Żyrandol dwusekcyjny',
+ desc:'<b>Żyrandol</b> ma dwie sekcje żarówek (L1 i L2), wspólne N i PE. Steruj nimi <b>łącznikiem świecznikowym</b>.',
+ dev:[SUP('B10'),D('zyr','chand','Żyrandol','t',1),D('S','double','Łącznik świecznikowy','b',0)],
+ ok:(s,l)=>l[0]===!!s[0]&&l[1]===!!s[1],expect:'klawisz 1 – sekcja L1, klawisz 2 – sekcja L2',
+ hint:'Wyjście 1 łącznika → L1 żyrandola, wyjście 2 → L2. Żyrandol ma jedno N i jedno PE.',
+ sol:W(['sup.L Z1 br','S.L Z1 br','S.1 Z2 bk','zyr.L1 Z2 bk','S.2 Z3 gr','zyr.L2 Z3 gr','sup.N Z4 bl','zyr.N Z4 bl','sup.PE Z5 yg','zyr.PE Z5 yg'])},
+{lvl:'Średnie',name:'Łazienka: światło + wentylator',
+ desc:'W łazience <b>łącznik świecznikowy</b>: klawisz 1 włącza lampę, klawisz 2 <b>wentylator</b>.',
+ dev:[SUP('B10'),D('lamp1','lamp','Lampa','t',1),D('S','double','Łącznik świecznikowy','b',0),D('fan','fan','Wentylator','b',1)],
+ ok:(s,l)=>l[0]===!!s[0]&&l[1]===!!s[1],expect:'klawisz 1 – lampa, klawisz 2 – wentylator',
+ hint:'Wentylator łączy się jak lampa: L z wyjścia łącznika, N i PE bezpośrednio.',
+ sol:W(['sup.L Z1 br','S.L Z1 br','S.1 Z2 bk','lamp1.L Z2 bk','S.2 Z3 gr','fan.L Z3 gr','sup.N Z4 bl','lamp1.N Z4 bl','fan.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg','fan.PE Z5 yg'])},
+{lvl:'Średnie',name:'Dzwonek z przyciskiem',
+ desc:'<b>Dzwonek 230 V</b> uruchamiany <b>przyciskiem dzwonkowym</b> (zwiernym). Dzwonek nie ma zacisku PE.',
+ dev:[SUP('B10'),D('bell','bell','Dzwonek 230 V','t',1),D('P','button','Przycisk','b',0)],
+ ok:(s,l)=>l[0]===!!s[0],expect:'dzwonek dzwoni tylko przy wciśniętym przycisku',
+ hint:'Przycisk działa jak łącznik – przerywa fazę. Wyjście przycisku do L dzwonka, N bezpośrednio. PE zasilania zostaje wolne (w praktyce zabezpieczone w puszce).',
+ sol:W(['sup.L Z1 br','P.L Z1 br','P.1 Z2 bk','bell.L Z2 bk','sup.N Z4 bl','bell.N Z4 bl'])},
+{lvl:'Średnie',name:'Czujnik ruchu',
+ desc:'Lampa włączana <b>czujnikiem ruchu</b>. Czujnik potrzebuje własnego zasilania (L i N), a jego wyjście <b>↑</b> zasila lampę.',
+ dev:[SUP('B10'),D('lamp1','lamp','Lampa','t',1),D('PIR','pir','Czujnik ruchu','b',0)],
+ ok:(s,l)=>l[0]===!!s[0],expect:'lampa świeci, gdy czujnik wykryje ruch',
+ hint:'L i N zasilania do zacisków L i N czujnika. Wyjście ↑ czujnika → L lampy. N lampy do tej samej złączki N co czujnik.',
+ sol:W(['sup.L Z1 br','PIR.L Z1 br','PIR.O Z2 bk','lamp1.L Z2 bk','sup.N Z4 bl','PIR.N Z4 bl','lamp1.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg'])},
+// ---------- ZAAWANSOWANE ----------
+{lvl:'Zaawansowane',name:'Układ schodowy (2 miejsca)',
+ desc:'Dwa <b>łączniki schodowe</b> A i B sterują jedną lampą z dwóch miejsc. Każde przełączenie zmienia stan lampy.',
+ dev:[SUP('B10'),D('lamp1','lamp','Lampa','t',1),D('A','twoway','Łącznik schodowy A','b',0),D('B','twoway','Łącznik schodowy B','b',1)],
+ ok:'parity',expect:'każde przełączenie łącznika A lub B zmienia stan lampy',
+ hint:'L → zacisk L łącznika A. Zaciski 1 i 2 łącznika A łączysz z zaciskami 1 i 2 łącznika B (przewody korespondencyjne). Zacisk L łącznika B → lampa.',
+ sol:W(['sup.L Z1 br','A.L Z1 br','A.1 Z2 bk','B.1 Z2 bk','A.2 Z3 gr','B.2 Z3 gr','B.L Z6 br','lamp1.L Z6 br','sup.N Z4 bl','lamp1.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg'])},
+{lvl:'Zaawansowane',name:'Układ krzyżowy (3 miejsca)',cols:3,hubs:9,
+ desc:'Lampa sterowana z <b>trzech miejsc</b>: łącznik schodowy A, <b>krzyżowy K</b> i schodowy B.',
+ dev:[SUP('B10'),D('lamp1','lamp','Lampa','t',2),D('A','twoway','Schodowy A','b',0),D('K','cross','Krzyżowy K','b',1),D('B','twoway','Schodowy B','b',2)],
+ ok:'parity',expect:'każde przełączenie dowolnego łącznika zmienia stan lampy',
+ hint:'Jak schodowy, ale przewody korespondencyjne z A idą do wejść 1 i 2 krzyżowego, a z jego wyjść 3 i 4 do zacisków 1 i 2 łącznika B.',
+ sol:W(['sup.L Z1 br','A.L Z1 br','A.1 Z2 bk','K.1 Z2 bk','A.2 Z3 gr','K.2 Z3 gr','K.3 Z5 bk','B.1 Z5 bk','K.4 Z6 gr','B.2 Z6 gr','B.L Z9 br','lamp1.L Z9 br','sup.N Z7 bl','lamp1.N Z7 bl','sup.PE Z8 yg','lamp1.PE Z8 yg'])},
+{lvl:'Zaawansowane',name:'Sterowanie z 4 miejsc',cols:3,hubs:12,
+ desc:'Długi korytarz: lampa sterowana z <b>czterech miejsc</b> – schodowy A, <b>dwa krzyżowe</b> K1 i K2, schodowy B.',
+ dev:[SUP('B10'),D('lamp1','lamp','Lampa','t',1),D('K2','cross','Krzyżowy K2','t',2),D('A','twoway','Schodowy A','b',0),D('K1','cross','Krzyżowy K1','b',1),D('B','twoway','Schodowy B','b',2)],
+ ok:'parity',expect:'każde przełączenie dowolnego z 4 łączników zmienia stan lampy',
+ hint:'Kolejność w przewodach korespondencyjnych: A → K1 (wejścia 1-2) → K1 wyjścia 3-4 → K2 wejścia 1-2 → K2 wyjścia 3-4 → B (1-2). Zacisk L łącznika B → lampa.',
+ sol:W(['sup.L Z1 br','A.L Z1 br','A.1 Z9 bk','K1.1 Z9 bk','A.2 Z10 gr','K1.2 Z10 gr','K1.3 Z11 bk','K2.1 Z11 bk','K1.4 Z12 gr','K2.2 Z12 gr','K2.3 Z7 bk','B.1 Z7 bk','K2.4 Z8 gr','B.2 Z8 gr','B.L Z6 br','lamp1.L Z6 br','sup.N Z2 bl','lamp1.N Z2 bl','sup.PE Z3 yg','lamp1.PE Z3 yg'])},
+// ---------- HOTEL I KLATKA ----------
+{lvl:'Hotel i klatka schodowa',name:'Kieszeń hotelowa na kartę',cols:3,
+ desc:'Pokój hotelowy: <b>wyłącznik kartowy</b> (kieszeń na kartę) odcina zasilanie całego pokoju. Bez karty nie działa ani lampa, ani gniazdo.',
+ dev:[SUP('B16'),D('lamp1','lamp','Lampa','t',1),D('g1','socket','Gniazdo','t',2),D('C','card','Kieszeń na kartę','b',0),D('S','single','Łącznik','b',2)],
+ ok:(s,l)=>l[0]===!!(s[0]&&s[1])&&l[1]===!!s[0],expect:'bez karty wszystko wyłączone; z kartą gniazdo działa, a lampę włącza łącznik',
+ hint:'L zasilania → L kieszeni. Wyjście ↑ kieszeni zasila „fazę pokoju”: łącznik i gniazdo (jedna złączka). Wyjście łącznika → lampa. N i PE wspólne.',
+ sol:W(['sup.L Z1 br','C.L Z1 br','C.O Z2 bk','S.L Z2 bk','g1.L Z2 bk','S.1 Z3 gr','lamp1.L Z3 gr','sup.N Z4 bl','lamp1.N Z4 bl','g1.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg','g1.PE Z5 yg'])},
+{lvl:'Hotel i klatka schodowa',name:'Pokój hotelowy: drzwi + łóżko',cols:3,hubs:9,
+ desc:'Światło w pokoju hotelowym sterowane <b>przy drzwiach i przy łóżku</b> (łączniki schodowe), a całość zasilana przez <b>kieszeń na kartę</b>.',
+ dev:[SUP('B10'),D('lamp1','lamp','Lampa','t',1),D('C','card','Kieszeń na kartę','t',2),D('A','twoway','Przy drzwiach','b',0),D('B','twoway','Przy łóżku','b',2)],
+ okT:tab=>{const on=tab.filter(r=>r.c[0]),off=tab.filter(r=>!r.c[0]);if(off.some(r=>r.l[0]))return false;const b=on.map(r=>r.l[0]!==!!(r.c[1]^r.c[2]));return b.every(v=>v===b[0])},
+ expect:'bez karty lampa nie świeci; z kartą każdy łącznik zmienia stan lampy',
+ hint:'L → kieszeń. Wyjście ↑ kieszeni → zacisk L łącznika „przy drzwiach”. Przewody korespondencyjne 1-1 i 2-2 do łącznika „przy łóżku”, jego L → lampa.',
+ sol:W(['sup.L Z1 br','C.L Z1 br','C.O Z2 bk','A.L Z2 bk','A.1 Z3 bk','B.1 Z3 bk','A.2 Z6 gr','B.2 Z6 gr','B.L Z9 br','lamp1.L Z9 br','sup.N Z7 bl','lamp1.N Z7 bl','sup.PE Z8 yg','lamp1.PE Z8 yg'])},
+{lvl:'Hotel i klatka schodowa',name:'Automat schodowy (klatka)',cols:3,
+ desc:'Klatka schodowa: <b>3 przyciski</b> na piętrach uruchamiają <b>automat schodowy</b> (przekaźnik czasowy), który zapala światło na kilka sekund.',
+ dev:[SUP('B10'),D('lamp1','lamp','Lampa klatki','t',1),D('P3','button','Przycisk II p.','t',2),D('P1','button','Przycisk parter','b',0),D('ASK','timer','Automat schodowy','b',1),D('P2','button','Przycisk I p.','b',2)],
+ expect:'wciśnięcie dowolnego przycisku zapala lampę na czas',
+ hint:'Automat ma zasilanie L i N, wejście S i wyjście ↑. Faza do wszystkich przycisków (jedna złączka), wyjścia wszystkich przycisków razem do S (druga złączka). Wyjście ↑ → lampa.',
+ sol:W(['sup.L Z1 br','ASK.L Z1 br','P1.L Z1 br','P2.L Z1 br','P3.L Z1 br','P1.1 Z2 bk','P2.1 Z2 bk','P3.1 Z2 bk','ASK.S Z2 bk','ASK.O Z3 gr','lamp1.L Z3 gr','sup.N Z4 bl','ASK.N Z4 bl','lamp1.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg'])},
+{lvl:'Hotel i klatka schodowa',name:'Przekaźnik bistabilny',cols:3,
+ desc:'Zamiast schodowych i krzyżowych: <b>przekaźnik bistabilny</b> (impulsowy) i <b>3 przyciski</b>. Każde wciśnięcie dowolnego przycisku przełącza światło.',
+ dev:[SUP('B10'),D('lamp1','lamp','Lampa','t',1),D('P3','button','Przycisk 3','t',2),D('P1','button','Przycisk 1','b',0),D('PB','bist','Przekaźnik bistabilny','b',1),D('P2','button','Przycisk 2','b',2)],
+ expect:'każde wciśnięcie przycisku przełącza lampę',
+ hint:'Łączy się tak samo jak automat schodowy: przyciski równolegle między L a wejściem S, wyjście ↑ → lampa, przekaźnik zasilony L i N.',
+ sol:W(['sup.L Z1 br','PB.L Z1 br','P1.L Z1 br','P2.L Z1 br','P3.L Z1 br','P1.1 Z2 bk','P2.1 Z2 bk','P3.1 Z2 bk','PB.S Z2 bk','PB.O Z3 gr','lamp1.L Z3 gr','sup.N Z4 bl','PB.N Z4 bl','lamp1.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg'])},
+// ---------- ZNAJDŹ BŁĄD ----------
+{lvl:'Znajdź błąd',name:'Błąd: lampa wciąż pod napięciem',fault:true,
+ desc:'Elektryk podłączył lampę – świeci i gaśnie, ale przy wymianie żarówki <b>kopnął prąd</b>. Znajdź i popraw błąd.',
+ dev:[SUP('B10'),D('lamp1','lamp','Lampa','t',1),D('S','single','Łącznik','b',0)],
+ ok:(s,l)=>l[0]===!!s[0],expect:'lampa świeci tylko przy włączonym łączniku',
+ start:W(['sup.L Z1 br','lamp1.L Z1 br','sup.N Z4 bl','S.L Z4 bl','S.1 Z2 bl','lamp1.N Z2 bl','sup.PE Z5 yg','lamp1.PE Z5 yg']),
+ hint:'Sprawdź, który przewód przechodzi przez łącznik: faza czy neutralny?',
+ sol:W(['sup.L Z1 br','S.L Z1 br','S.1 Z2 bk','lamp1.L Z2 bk','sup.N Z4 bl','lamp1.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg'])},
+{lvl:'Znajdź błąd',name:'Błąd: kolory i ochrona',fault:true,
+ desc:'Lampy działają, ale inspektor nie odebrał instalacji. Znajdź <b>wszystkie</b> usterki (kolory, ochrona).',
+ dev:[SUP('B10'),D('lamp1','lamp','Lampa 1','t',1),D('S','single','Łącznik','b',0),D('lamp2','lamp','Lampa 2','b',1)],
+ ok:(s,l)=>l[0]===!!s[0]&&l[1]===!!s[0],expect:'obie lampy świecą razem po włączeniu łącznika',
+ start:W(['sup.L Z1 br','S.L Z1 br','S.1 Z2 bl','lamp1.L Z2 bk','lamp2.L Z2 bk','sup.N Z4 bl','lamp1.N Z4 br','lamp2.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg']),
+ hint:'Przyjrzyj się kolorom przewodów przy łączniku i przy lampie 1. Czy obie lampy mają PE?',
+ sol:W(['sup.L Z1 br','S.L Z1 br','S.1 Z2 bk','lamp1.L Z2 bk','lamp2.L Z2 bk','sup.N Z4 bl','lamp1.N Z4 bl','lamp2.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg','lamp2.PE Z5 yg'])},
+{lvl:'Znajdź błąd',name:'Błąd: schodowy nie działa',fault:true,
+ desc:'Układ schodowy działa tylko w niektórych pozycjach łączników. <b>Włącz zasilanie</b>, poprzełączaj i znajdź błąd.',
+ dev:[SUP('B10'),D('lamp1','lamp','Lampa','t',1),D('A','twoway','Łącznik schodowy A','b',0),D('B','twoway','Łącznik schodowy B','b',1)],
+ ok:'parity',expect:'każde przełączenie łącznika A lub B zmienia stan lampy',
+ start:W(['sup.L Z1 br','A.L Z1 br','A.1 Z2 bk','B.1 Z2 bk','A.2 Z3 gr','B.L Z3 gr','B.2 Z6 br','lamp1.L Z6 br','sup.N Z4 bl','lamp1.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg']),
+ hint:'Który zacisk łącznika B powinien iść do lampy – wspólny (L) czy korespondencyjny (2)?',
+ sol:W(['sup.L Z1 br','A.L Z1 br','A.1 Z2 bk','B.1 Z2 bk','A.2 Z3 gr','B.2 Z3 gr','B.L Z6 br','lamp1.L Z6 br','sup.N Z4 bl','lamp1.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg'])},
+{lvl:'Znajdź błąd',name:'Błąd: wybija bezpiecznik',fault:true,
+ desc:'Po włączeniu obwodu gniazd <b>od razu wybija zabezpieczenie</b>. Znajdź zwarcie i inne usterki.',
+ dev:[SUP('B16'),D('g1','socket','Gniazdo 1','b',0),D('g2','socket','Gniazdo 2','b',1)],
+ ok:(s,l)=>l[0]&&l[1],expect:'oba gniazda pod napięciem',
+ start:W(['sup.L Z1 br','g1.L Z1 br','g2.N Z1 bl','sup.N Z4 bl','g1.N Z4 bl','g2.L Z4 br','sup.PE Z5 yg','g2.PE Z5 yg','g1.PE Z1 yg']),
+ hint:'Gdzie jest podłączony PE gniazda 1? Sprawdź też, czy w gnieździe 2 nie zamieniono L i N.',
+ sol:W(['sup.L Z1 br','g1.L Z1 br','g2.L Z1 br','sup.N Z4 bl','g1.N Z4 bl','g2.N Z4 bl','sup.PE Z5 yg','g1.PE Z5 yg','g2.PE Z5 yg'])},
+{lvl:'Znajdź błąd',name:'Błąd: pomylone klawisze',fault:true,
+ desc:'W łazience klawisz „lampa” włącza wentylator i odwrotnie, a do tego jedna obudowa nie ma ochrony. Popraw.',
+ dev:[SUP('B10'),D('lamp1','lamp','Lampa','t',1),D('S','double','Łącznik świecznikowy','b',0),D('fan','fan','Wentylator','b',1)],
+ ok:(s,l)=>l[0]===!!s[0]&&l[1]===!!s[1],expect:'klawisz 1 – lampa, klawisz 2 – wentylator',
+ start:W(['sup.L Z1 br','S.L Z1 br','S.1 Z2 bk','fan.L Z2 bk','S.2 Z3 gr','lamp1.L Z3 gr','sup.N Z4 bl','lamp1.N Z4 bl','fan.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg']),
+ hint:'Wyjście 1 łącznika powinno iść do lampy. Sprawdź też PE wentylatora.',
+ sol:W(['sup.L Z1 br','S.L Z1 br','S.1 Z2 bk','lamp1.L Z2 bk','S.2 Z3 gr','fan.L Z3 gr','sup.N Z4 bl','lamp1.N Z4 bl','fan.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg','fan.PE Z5 yg'])},
+{lvl:'Znajdź błąd',name:'Błąd: klatka świeci cały czas',fault:true,cols:3,
+ desc:'Na klatce schodowej światło <b>świeci bez przerwy</b>, a przyciski nic nie zmieniają. Znajdź błąd.',
+ dev:[SUP('B10'),D('lamp1','lamp','Lampa klatki','t',1),D('P3','button','Przycisk II p.','t',2),D('P1','button','Przycisk parter','b',0),D('ASK','timer','Automat schodowy','b',1),D('P2','button','Przycisk I p.','b',2)],
+ expect:'wciśnięcie dowolnego przycisku zapala lampę na czas',
+ start:W(['sup.L Z1 br','ASK.L Z1 br','P1.L Z1 br','P2.L Z1 br','P3.L Z1 br','lamp1.L Z1 br','P1.1 Z2 bk','P2.1 Z2 bk','P3.1 Z2 bk','ASK.S Z2 bk','ASK.O Z3 gr','sup.N Z4 bl','ASK.N Z4 bl','lamp1.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg']),
+ hint:'Skąd lampa dostaje fazę? Powinna z wyjścia ↑ automatu, a nie bezpośrednio z L.',
+ sol:W(['sup.L Z1 br','ASK.L Z1 br','P1.L Z1 br','P2.L Z1 br','P3.L Z1 br','P1.1 Z2 bk','P2.1 Z2 bk','P3.1 Z2 bk','ASK.S Z2 bk','ASK.O Z3 gr','lamp1.L Z3 gr','sup.N Z4 bl','ASK.N Z4 bl','lamp1.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg'])}
+];
+
+// ======== DODATKOWE ZADANIA ========
+const GRAY=l=>l.map(([a,b])=>[a,b,'gr']);
+const PAR=(tab,li,idx)=>{const b=tab.map(r=>r.l[li]!==!!idx.reduce((a,k)=>a^r.c[k],0));return b.every(v=>v===b[0])};
+const BOARD=(t)=>D('sup','supply',t||'Przyłącze z licznika','t',0);
+const SOL1=W(['sup.L Z1 br','S.L Z1 br','S.1 Z2 bk','lamp1.L Z2 bk','sup.N Z4 bl','lamp1.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg']);
+const DEV1=()=>[SUP('B10'),D('lamp1','lamp','Lampa','t',1),D('S','single','Łącznik','b',0)];
+const SOLSCH=W(['sup.L Z1 br','A.L Z1 br','A.1 Z2 bk','B.1 Z2 bk','A.2 Z3 gr','B.2 Z3 gr','B.L Z6 br','lamp1.L Z6 br','sup.N Z4 bl','lamp1.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg']);
+const SOLR2=W(['sup.L Z1 br','F1.I Z1 br','F2.I Z1 br','F1.O Z2 br','lamp1.L Z2 br','F2.O Z3 bk','g1.L Z3 bk','sup.N Z4 bl','lamp1.N Z4 bl','g1.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg','g1.PE Z5 yg']);
+const DEVR2=()=>[BOARD(),D('lamp1','lamp','Lampa','t',1),D('g1','socket','Gniazdo','t',2),D('F1','mcb','B10 oświetlenie','b',0),D('F2','mcb','B16 gniazda','b',2)];
+const SOLR3=W(['sup.L R.L br','sup.N R.N bl','R.LO Z1 br','F1.I Z1 br','F2.I Z1 br','F1.O Z2 br','lamp1.L Z2 br','F2.O Z3 bk','g1.L Z3 bk','R.NO Z4 bl','lamp1.N Z4 bl','g1.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg','g1.PE Z5 yg']);
+const DEVR3=()=>[BOARD(),D('lamp1','lamp','Lampa','t',1),D('g1','socket','Gniazdo','t',2),D('F1','mcb','B10 oświetlenie','b',0),D('R','rcd','Różnicówka 30 mA','b',1),D('F2','mcb','B16 gniazda','b',2)];
+const BH={Z4:'N',Z5:'PE'};
+SC.push(
+// ---- Podstawy
+{lvl:'Podstawy',name:'Trzy gniazda',cols:3,desc:'Zasil <b>trzy gniazda</b> z jednej puszki (np. ściana z biurkiem).',
+ dev:[SUP('B16'),D('g1','socket','Gniazdo 1','b',0),D('g2','socket','Gniazdo 2','b',1),D('g3','socket','Gniazdo 3','b',2)],ok:(s,l)=>l.every(x=>x),expect:'wszystkie gniazda pod napięciem',
+ hint:'Złączka L z czterema przewodami (zasilanie + 3 gniazda), tak samo N i PE.',
+ sol:W(['sup.L Z1 br','g1.L Z1 br','g2.L Z1 br','g3.L Z1 br','sup.N Z4 bl','g1.N Z4 bl','g2.N Z4 bl','g3.N Z4 bl','sup.PE Z5 yg','g1.PE Z5 yg','g2.PE Z5 yg','g3.PE Z5 yg'])},
+{lvl:'Podstawy',name:'Ściemniacz',desc:'<b>Ściemniacz</b> łączy się jak zwykły łącznik: przerywa fazę. Zacisk L – zasilanie, ↑ – do lampy.',
+ dev:[SUP('B10'),D('lamp1','lamp','Lampa','t',1),D('S','dimmer','Ściemniacz','b',0)],ok:(s,l)=>l[0]===!!s[0],expect:'lampa świeci przy włączonym ściemniaczu',
+ hint:'Jak w zadaniu 1: L zasilania → L ściemniacza, ↑ → L lampy.',sol:SOL1},
+{lvl:'Podstawy',name:'Trzy lampy jednym łącznikiem',cols:3,desc:'Jeden łącznik zapala <b>trzy lampy</b> naraz (np. oczka w suficie).',
+ dev:[SUP('B10'),D('lamp1','lamp','Lampa 1','t',1),D('lamp2','lamp','Lampa 2','t',2),D('S','single','Łącznik','b',0),D('lamp3','lamp','Lampa 3','b',2)],ok:(s,l)=>l.every(x=>x===!!s[0]),expect:'wszystkie lampy świecą razem',
+ hint:'Wyjście łącznika do jednej złączki, z niej do L wszystkich trzech lamp.',
+ sol:W(['sup.L Z1 br','S.L Z1 br','S.1 Z2 bk','lamp1.L Z2 bk','lamp2.L Z2 bk','lamp3.L Z2 bk','sup.N Z4 bl','lamp1.N Z4 bl','lamp2.N Z4 bl','lamp3.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg','lamp2.PE Z5 yg','lamp3.PE Z5 yg'])},
+{lvl:'Podstawy',name:'Gniazdo stałe + sterowane',cols:3,desc:'Dwa gniazda: jedno <b>zawsze pod napięciem</b>, drugie <b>włączane łącznikiem</b>.',
+ dev:[SUP('B16'),D('g1','socket','Gniazdo stałe','t',1),D('g2','socket','Gniazdo sterowane','t',2),D('S','single','Łącznik','b',0)],ok:(s,l)=>l[0]&&l[1]===!!s[0],expect:'gniazdo stałe zawsze, sterowane tylko z łącznikiem',
+ hint:'L zasilania do gniazda stałego i do łącznika. Wyjście łącznika do gniazda sterowanego.',
+ sol:W(['sup.L Z1 br','g1.L Z1 br','S.L Z1 br','S.1 Z2 bk','g2.L Z2 bk','sup.N Z4 bl','g1.N Z4 bl','g2.N Z4 bl','sup.PE Z5 yg','g1.PE Z5 yg','g2.PE Z5 yg'])},
+// ---- Średnie
+{lvl:'Średnie',name:'Wentylator razem ze światłem',desc:'W WC <b>wentylator</b> ma się włączać <b>razem ze światłem</b> jednym łącznikiem.',
+ dev:[SUP('B10'),D('lamp1','lamp','Lampa','t',1),D('S','single','Łącznik','b',0),D('fan','fan','Wentylator','b',1)],ok:(s,l)=>l.every(x=>x===!!s[0]),expect:'lampa i wentylator działają razem',
+ hint:'Wentylator i lampa równolegle: oba L do wyjścia łącznika.',
+ sol:W(['sup.L Z1 br','S.L Z1 br','S.1 Z2 bk','lamp1.L Z2 bk','fan.L Z2 bk','sup.N Z4 bl','lamp1.N Z4 bl','fan.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg','fan.PE Z5 yg'])},
+{lvl:'Średnie',name:'Świecznikowy: 3 lampy',cols:3,desc:'Klawisz 1 zapala <b>dwie lampy</b> nad stołem, klawisz 2 <b>trzecią</b> nad blatem.',
+ dev:[SUP('B10'),D('lamp1','lamp','Lampa stół 1','t',1),D('lamp2','lamp','Lampa stół 2','t',2),D('S','double','Łącznik świecznikowy','b',0),D('lamp3','lamp','Lampa blat','b',2)],
+ ok:(s,l)=>l[0]===!!s[0]&&l[1]===!!s[0]&&l[2]===!!s[1],expect:'klawisz 1 – dwie lampy stołu, klawisz 2 – lampa blatu',
+ hint:'Wyjście 1 do złączki z L obu lamp stołu, wyjście 2 do L lampy blatu.',
+ sol:W(['sup.L Z1 br','S.L Z1 br','S.1 Z2 bk','lamp1.L Z2 bk','lamp2.L Z2 bk','S.2 Z3 gr','lamp3.L Z3 gr','sup.N Z4 bl','lamp1.N Z4 bl','lamp2.N Z4 bl','lamp3.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg','lamp2.PE Z5 yg','lamp3.PE Z5 yg'])},
+{lvl:'Średnie',name:'Dwa pokoje + gniazdo',cols:3,desc:'Z jednej puszki: <b>dwie lampy</b> z osobnymi łącznikami i <b>gniazdo</b> stałe.',
+ dev:[SUP('B16'),D('lamp1','lamp','Lampa salon','t',1),D('lamp2','lamp','Lampa sypialnia','t',2),D('S1','single','Łącznik salon','b',0),D('g1','socket','Gniazdo','b',1),D('S2','single','Łącznik sypialnia','b',2)],
+ ok:(s,l)=>l[0]===!!s[0]&&l[1]===!!s[1]&&l[2],expect:'każdy łącznik swoją lampę, gniazdo zawsze',
+ hint:'Złączka L: zasilanie, oba łączniki, gniazdo. Osobne złączki dla wyjść łączników.',
+ sol:W(['sup.L Z1 br','S1.L Z1 br','S2.L Z1 br','g1.L Z1 br','S1.1 Z2 bk','lamp1.L Z2 bk','S2.1 Z3 gr','lamp2.L Z3 gr','sup.N Z4 bl','lamp1.N Z4 bl','lamp2.N Z4 bl','g1.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg','lamp2.PE Z5 yg','g1.PE Z5 yg'])},
+{lvl:'Średnie',name:'Dzwonek z dwóch miejsc',cols:3,desc:'Dzwonek uruchamiany <b>z furtki i z drzwi</b> – dwa przyciski połączone równolegle.',
+ dev:[SUP('B10'),D('bell','bell','Dzwonek 230 V','t',1),D('P1','button','Przycisk furtka','b',0),D('P2','button','Przycisk drzwi','b',2)],ok:(s,l)=>l[0]===!!(s[0]||s[1]),expect:'dzwonek dzwoni po wciśnięciu dowolnego przycisku',
+ hint:'Oba przyciski między tą samą złączką L i tą samą złączką prowadzącą do dzwonka.',
+ sol:W(['sup.L Z1 br','P1.L Z1 br','P2.L Z1 br','P1.1 Z2 bk','P2.1 Z2 bk','bell.L Z2 bk','sup.N Z4 bl','bell.N Z4 bl'])},
+{lvl:'Średnie',name:'Termostat i grzejnik',desc:'<b>Termostat</b> włącza <b>grzejnik elektryczny</b>, gdy w pokoju zrobi się zimno. Przełączaj temperaturę.',
+ dev:[SUP('B16'),D('heater','heater','Grzejnik','t',1),D('TH','thermo','Termostat','b',0)],ok:(s,l)=>l[0]===!!s[0],expect:'grzejnik grzeje tylko gdy jest zimno',
+ hint:'Termostat przerywa fazę jak łącznik: L → termostat → L grzejnika. Grzejnik ma metalową obudowę – PE!',
+ sol:W(['sup.L Z1 br','TH.L Z1 br','TH.1 Z2 bk','heater.L Z2 bk','sup.N Z4 bl','heater.N Z4 bl','sup.PE Z5 yg','heater.PE Z5 yg'])},
+{lvl:'Średnie',name:'Czujnik zmierzchowy',desc:'<b>Lampa ogrodowa</b> zapala się sama, gdy zrobi się ciemno. Czujnik zmierzchowy potrzebuje L i N.',
+ dev:[SUP('B10'),D('lamp1','lamp','Lampa ogrodowa','t',1),D('DZ','dusk','Czujnik zmierzchowy','b',0)],ok:(s,l)=>l[0]===!!s[0],expect:'lampa świeci tylko w nocy',
+ hint:'Tak jak czujnik ruchu: L i N do czujnika, wyjście ↑ do lampy.',
+ sol:W(['sup.L Z1 br','DZ.L Z1 br','DZ.O Z2 bk','lamp1.L Z2 bk','sup.N Z4 bl','DZ.N Z4 bl','lamp1.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg'])},
+{lvl:'Średnie',name:'Czujnik ruchu + gniazdo',desc:'W garażu: lampa na <b>czujnik ruchu</b> i <b>gniazdo</b> zawsze pod napięciem.',
+ dev:[SUP('B16'),D('lamp1','lamp','Lampa garaż','t',1),D('PIR','pir','Czujnik ruchu','b',0),D('g1','socket','Gniazdo','b',1)],ok:(s,l)=>l[0]===!!s[0]&&l[1],expect:'lampa na ruch, gniazdo zawsze',
+ hint:'Złączka L: zasilanie, czujnik, gniazdo. Wyjście czujnika do lampy.',
+ sol:W(['sup.L Z1 br','PIR.L Z1 br','g1.L Z1 br','PIR.O Z2 bk','lamp1.L Z2 bk','sup.N Z4 bl','PIR.N Z4 bl','lamp1.N Z4 bl','g1.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg','g1.PE Z5 yg'])},
+{lvl:'Średnie',name:'Ogród: zmierzch + gniazdo',desc:'Ogród: lampa na <b>czujnik zmierzchowy</b> i <b>gniazdo ogrodowe</b> stałe.',
+ dev:[SUP('B16'),D('lamp1','lamp','Lampa ogrodowa','t',1),D('DZ','dusk','Czujnik zmierzchowy','b',0),D('g1','socket','Gniazdo ogrodowe','b',1)],ok:(s,l)=>l[0]===!!s[0]&&l[1],expect:'lampa w nocy, gniazdo zawsze',
+ hint:'Jak czujnik ruchu z gniazdem – czujnik zasilony L i N, wyjście do lampy, gniazdo z L zasilania.',
+ sol:W(['sup.L Z1 br','DZ.L Z1 br','g1.L Z1 br','DZ.O Z2 bk','lamp1.L Z2 bk','sup.N Z4 bl','DZ.N Z4 bl','lamp1.N Z4 bl','g1.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg','g1.PE Z5 yg'])},
+// ---- Zaawansowane
+{lvl:'Zaawansowane',name:'Bojler: łącznik dwubiegunowy',nsw:true,desc:'<b>Bojler</b> wyłączamy <b>łącznikiem dwubiegunowym</b>, który odcina jednocześnie L i N.',
+ dev:[SUP('B16'),D('heater','heater','Bojler','t',1),D('S','dp','Łącznik 2-biegunowy','b',0)],ok:(s,l)=>l[0]===!!s[0],expect:'bojler grzeje tylko przy włączonym łączniku',
+ hint:'L zasilania → L łącznika, N zasilania → N łącznika. L↑ → L bojlera, N↑ → N bojlera. PE bezpośrednio.',
+ sol:W(['sup.L Z1 br','S.L Z1 br','S.1 Z2 bk','heater.L Z2 bk','sup.N Z4 bl','S.N Z4 bl','S.2 Z3 bl','heater.N Z3 bl','sup.PE Z5 yg','heater.PE Z5 yg'])},
+{lvl:'Zaawansowane',name:'Zmierzchowy + łącznik',desc:'Lampa przed domem świeci <b>tylko w nocy</b> i <b>tylko gdy włączysz łącznik</b> (łącznik za czujnikiem).',
+ dev:[SUP('B10'),D('lamp1','lamp','Lampa','t',1),D('DZ','dusk','Czujnik zmierzchowy','b',0),D('S','single','Łącznik','b',1)],ok:(s,l)=>l[0]===!!(s[0]&&s[1]),expect:'lampa świeci tylko w nocy i przy włączonym łączniku',
+ hint:'Wyjście ↑ czujnika → L łącznika, wyjście 1 łącznika → lampa.',
+ sol:W(['sup.L Z1 br','DZ.L Z1 br','DZ.O Z2 bk','S.L Z2 bk','S.1 Z3 gr','lamp1.L Z3 gr','sup.N Z4 bl','DZ.N Z4 bl','lamp1.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg'])},
+{lvl:'Zaawansowane',name:'Schodowy + gniazdo',cols:3,hubs:9,desc:'Korytarz: <b>układ schodowy</b> i <b>gniazdo</b> stałe z tej samej puszki.',
+ dev:[SUP('B16'),D('lamp1','lamp','Lampa','t',1),D('g1','socket','Gniazdo','t',2),D('A','twoway','Schodowy A','b',0),D('B','twoway','Schodowy B','b',2)],
+ okT:tab=>tab.every(r=>r.l[1])&&PAR(tab,0,[0,1]),expect:'schodowy steruje lampą, gniazdo zawsze',
+ hint:'Złączka L: zasilanie, L łącznika A, gniazdo. Dalej jak zwykły schodowy.',
+ sol:W(['sup.L Z1 br','A.L Z1 br','g1.L Z1 br','A.1 Z2 bk','B.1 Z2 bk','A.2 Z3 gr','B.2 Z3 gr','B.L Z9 br','lamp1.L Z9 br','sup.N Z7 bl','lamp1.N Z7 bl','g1.N Z7 bl','sup.PE Z8 yg','lamp1.PE Z8 yg','g1.PE Z8 yg'])},
+{lvl:'Zaawansowane',name:'Schodowy + 2 lampy',cols:3,desc:'Układ schodowy steruje <b>dwiema lampami</b> naraz (góra i dół schodów).',
+ dev:[SUP('B10'),D('lamp1','lamp','Lampa dół','t',1),D('lamp2','lamp','Lampa góra','t',2),D('A','twoway','Schodowy A','b',0),D('B','twoway','Schodowy B','b',2)],
+ okT:tab=>tab.every(r=>r.l[0]===r.l[1])&&PAR(tab,0,[0,1]),expect:'obie lampy razem, każde przełączenie zmienia ich stan',
+ hint:'Zacisk L łącznika B do złączki, z której idą L obu lamp.',
+ sol:W(['sup.L Z1 br','A.L Z1 br','A.1 Z2 bk','B.1 Z2 bk','A.2 Z3 gr','B.2 Z3 gr','B.L Z6 br','lamp1.L Z6 br','lamp2.L Z6 br','sup.N Z4 bl','lamp1.N Z4 bl','lamp2.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg','lamp2.PE Z5 yg'])},
+// ---- Hotel i klatka
+{lvl:'Hotel i klatka schodowa',name:'Automat schodowy: 2 lampy',cols:3,desc:'Klatka: <b>automat schodowy</b> zapala <b>dwie lampy</b> (parter i piętro), przyciski na obu kondygnacjach.',
+ dev:[SUP('B10'),D('lamp1','lamp','Lampa parter','t',1),D('lamp2','lamp','Lampa piętro','t',2),D('P1','button','Przycisk parter','b',0),D('ASK','timer','Automat schodowy','b',1),D('P2','button','Przycisk piętro','b',2)],
+ expect:'przycisk zapala obie lampy na czas',hint:'Wyjście ↑ automatu do złączki z L obu lamp. Przyciski równolegle między L a S.',
+ sol:W(['sup.L Z1 br','ASK.L Z1 br','P1.L Z1 br','P2.L Z1 br','P1.1 Z2 bk','P2.1 Z2 bk','ASK.S Z2 bk','ASK.O Z3 gr','lamp1.L Z3 gr','lamp2.L Z3 gr','sup.N Z4 bl','ASK.N Z4 bl','lamp1.N Z4 bl','lamp2.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg','lamp2.PE Z5 yg'])},
+{lvl:'Hotel i klatka schodowa',name:'Bistabilny: 2 lampy',cols:3,desc:'Długi korytarz: <b>przekaźnik bistabilny</b> i dwa przyciski sterują <b>dwiema lampami</b>.',
+ dev:[SUP('B10'),D('lamp1','lamp','Lampa 1','t',1),D('lamp2','lamp','Lampa 2','t',2),D('P1','button','Przycisk 1','b',0),D('PB','bist','Przekaźnik bistabilny','b',1),D('P2','button','Przycisk 2','b',2)],
+ expect:'każde wciśnięcie przełącza obie lampy',hint:'Jak automat schodowy, tylko przekaźnik bistabilny.',
+ sol:W(['sup.L Z1 br','PB.L Z1 br','P1.L Z1 br','P2.L Z1 br','P1.1 Z2 bk','P2.1 Z2 bk','PB.S Z2 bk','PB.O Z3 gr','lamp1.L Z3 gr','lamp2.L Z3 gr','sup.N Z4 bl','PB.N Z4 bl','lamp1.N Z4 bl','lamp2.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg','lamp2.PE Z5 yg'])},
+{lvl:'Hotel i klatka schodowa',name:'Hotel: karta + świecznikowy',cols:3,desc:'Pokój: <b>kieszeń na kartę</b> zasila <b>łącznik świecznikowy</b> (sufit i kinkiet).',
+ dev:[SUP('B10'),D('lamp1','lamp','Lampa sufit','t',1),D('lamp2','lamp','Kinkiet','t',2),D('C','card','Kieszeń na kartę','b',0),D('S','double','Łącznik świecznikowy','b',2)],
+ ok:(s,l)=>l[0]===!!(s[0]&&s[1])&&l[1]===!!(s[0]&&s[2]),expect:'bez karty ciemno; z kartą klawisze sterują lampami',
+ hint:'Wyjście ↑ kieszeni → wspólny L łącznika świecznikowego.',
+ sol:W(['sup.L Z1 br','C.L Z1 br','C.O Z2 bk','S.L Z2 bk','S.1 Z3 bk','lamp1.L Z3 bk','S.2 Z6 gr','lamp2.L Z6 gr','sup.N Z4 bl','lamp1.N Z4 bl','lamp2.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg','lamp2.PE Z5 yg'])},
+{lvl:'Hotel i klatka schodowa',name:'Hotel: łazienka na kartę',cols:3,desc:'Łazienka hotelowa: <b>karta</b> zasila lampę, wentylator (łącznik świecznikowy) i gniazdo przy lustrze.',
+ dev:[SUP('B16'),D('lamp1','lamp','Lampa','t',1),D('fan','fan','Wentylator','t',2),D('C','card','Kieszeń na kartę','b',0),D('S','double','Łącznik świecznikowy','b',1),D('g1','socket','Gniazdo','b',2)],
+ ok:(s,l)=>l[0]===!!(s[0]&&s[1])&&l[1]===!!(s[0]&&s[2])&&l[2]===!!s[0],expect:'wszystko tylko z kartą; klawisz 1 lampa, 2 wentylator',
+ hint:'Faza po karcie (↑) do łącznika i gniazda. Wyjścia łącznika do lampy i wentylatora.',
+ sol:W(['sup.L Z1 br','C.L Z1 br','C.O Z2 bk','S.L Z2 bk','g1.L Z2 bk','S.1 Z3 gr','lamp1.L Z3 gr','S.2 Z6 gr','fan.L Z6 gr','sup.N Z4 bl','lamp1.N Z4 bl','fan.N Z4 bl','g1.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg','fan.PE Z5 yg','g1.PE Z5 yg'])},
+// ---- Rozdzielnica
+{lvl:'Rozdzielnica',name:'Wyłącznik nadprądowy',board:true,hubNames:BH,desc:'W <b>rozdzielnicy</b>: faza z licznika przez <b>wyłącznik nadprądowy B10</b> do lampy. N i PE na szyny.',
+ dev:[BOARD(),D('lamp1','lamp','Lampa','t',1),D('F1','mcb','Wyłącznik B10','b',0)],ok:(s,l)=>l[0]===!!s[0],expect:'lampa świeci tylko przy załączonym wyłączniku',
+ hint:'L z przyłącza na zacisk „we” (góra) wyłącznika. Z „wy” do lampy. N na szynę N, PE na szynę PE.',
+ sol:W(['sup.L F1.I br','F1.O Z1 br','lamp1.L Z1 br','sup.N Z4 bl','lamp1.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg'])},
+{lvl:'Rozdzielnica',name:'Dwa obwody: B10 i B16',board:true,cols:3,hubNames:BH,desc:'Dwa obwody: <b>oświetlenie B10</b> i <b>gniazda B16</b>. Każdy obwód ma swój wyłącznik.',
+ dev:DEVR2(),ok:(s,l)=>l[0]===!!s[0]&&l[1]===!!s[1],expect:'B10 wyłącza lampę, B16 wyłącza gniazdo',
+ hint:'Faza z przyłącza na wejścia obu wyłączników (mostek). Wyjście B10 → lampa, wyjście B16 → gniazdo. N i PE wspólne szyny.',sol:SOLR2},
+{lvl:'Rozdzielnica',name:'Różnicówka + 2 obwody',board:true,cols:3,hubNames:BH,nsw:true,rcd:'R',desc:'Pełniejsza rozdzielnica: <b>wyłącznik różnicowoprądowy 30 mA</b>, za nim dwa wyłączniki: B10 (światło) i B16 (gniazda). <b>N odbiorników musi iść przez różnicówkę!</b>',
+ dev:DEVR3(),ok:(s,l)=>l[0]===!!(s[0]&&s[1])&&l[1]===!!(s[1]&&s[2]),expect:'różnicówka wyłącza wszystko, B10 lampę, B16 gniazdo',
+ hint:'L i N z przyłącza na górne zaciski różnicówki. L↓ na wejścia B10 i B16. N↓ na szynę N. PE prosto z przyłącza na szynę PE (PE nigdy przez różnicówkę!).',sol:SOLR3},
+{lvl:'Rozdzielnica',name:'Rozdzielnica + łącznik',board:true,hubNames:BH,desc:'Obwód od <b>wyłącznika B10</b> w rozdzielnicy przez <b>łącznik</b> w pokoju do lampy.',
+ dev:[BOARD(),D('lamp1','lamp','Lampa','t',1),D('F1','mcb','Wyłącznik B10','b',0),D('S','single','Łącznik','b',1)],ok:(s,l)=>l[0]===!!(s[0]&&s[1]),expect:'lampa świeci przy załączonym B10 i włączonym łączniku',
+ hint:'Przyłącze → we B10, wy B10 → L łącznika, wyjście łącznika → lampa.',
+ sol:W(['sup.L F1.I br','F1.O Z1 br','S.L Z1 br','S.1 Z2 bk','lamp1.L Z2 bk','sup.N Z4 bl','lamp1.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg'])},
+// ---- Pomiary
+{lvl:'Pomiary miernikiem',name:'Gdzie jest faza?',desc:'Wszystkie przewody są <b>szare</b> – kolor nic nie powie. Włącz zasilanie i użyj <b>🪛 próbnika</b>, żeby znaleźć fazę.',
+ dev:DEV1(),start:GRAY(SOL1),sol:GRAY(SOL1),measure:{q:'Na której złączce jest faza z zasilania – także przy WYŁĄCZONYM łączniku?',opts:['Z1','Z2','Z4','Z5'],a:0,why:'Z1 łączy L zasilania z łącznikiem – faza jest tam zawsze. Z2 ma fazę tylko po włączeniu łącznika.'},
+ hint:'Włącz zasilanie, wyłącz łącznik, włącz próbnik i dotykaj po kolei złączek.'},
+{lvl:'Pomiary miernikiem',name:'Przewód łączeniowy',desc:'Znajdź przewód łączeniowy (od łącznika do lampy) za pomocą <b>próbnika</b>. Przewody są szare.',
+ dev:DEV1(),start:GRAY(SOL1),sol:GRAY(SOL1),measure:{q:'Która złączka ma fazę TYLKO przy włączonym łączniku?',opts:['Z1','Z2','Z4','Z5'],a:1,why:'Z2 to przewód łączeniowy: faza pojawia się na nim dopiero po zamknięciu łącznika.'},
+ hint:'Sprawdzaj złączki próbnikiem przy łączniku WYŁ i WŁ i porównaj.'},
+{lvl:'Pomiary miernikiem',name:'Napięcia w gnieździe',desc:'Zmierz <b>miernikiem</b> napięcia w gnieździe: L–N, L–PE oraz N–PE. Dotknij dwóch zacisków, miernik pokaże wynik.',
+ dev:[SUP('B16'),D('g1','socket','Gniazdo','t',1)],start:W(['sup.L Z1 br','g1.L Z1 br','sup.N Z4 bl','g1.N Z4 bl','sup.PE Z5 yg','g1.PE Z5 yg']),sol:[],
+ measure:{q:'Ile pokazuje miernik między N a PE w sprawnym gnieździe?',opts:['230 V','0 V','115 V','400 V'],a:1,why:'L–N i L–PE to ok. 230 V, a między N i PE napięcia praktycznie nie ma (0 V) – oba są połączone z ziemią w układzie sieci.'},
+ hint:'Włącz zasilanie i próbnik. Dotknij N gniazda, a potem PE gniazda.'},
+{lvl:'Pomiary miernikiem',name:'Diagnoza: lampa nie świeci',desc:'Lampa <b>nie świeci</b> mimo włączonego łącznika. Zmierz napięcie na zaciskach lampy: <b>L–N</b> i <b>L–PE</b>.',
+ dev:DEV1(),start:GRAY(W(['sup.L Z1 br','S.L Z1 br','S.1 Z2 bk','lamp1.L Z2 bk','sup.N Z4 bl','lamp1.N Z6 bl','sup.PE Z5 yg','lamp1.PE Z5 yg'])),sol:[],
+ measure:{q:'L–PE na lampie = 230 V, L–N = 0 V. Co jest uszkodzone?',opts:['Przerwany przewód N','Brak fazy z łącznika','Uszkodzony łącznik','Brak przewodu PE'],a:0,why:'Faza dochodzi (L–PE = 230 V), ale nie ma powrotu przez N (L–N = 0 V) – przerwa w przewodzie N. N lampy jest w złączce Z6, która nie jest połączona z N zasilania.'},
+ hint:'Włącz zasilanie i łącznik. Zmierz lampa L ↔ lampa N, potem lampa L ↔ lampa PE.'},
+{lvl:'Pomiary miernikiem',name:'Diagnoza: kopie przy wymianie żarówki',desc:'Ktoś skarży się, że przy <b>wyłączonym</b> łączniku „kopie” w lampie. Sprawdź próbnikiem zacisk L lampy.',
+ dev:DEV1(),start:GRAY(W(['sup.L Z1 br','lamp1.L Z1 br','sup.N Z4 bl','S.L Z4 bl','S.1 Z2 bl','lamp1.N Z2 bl','sup.PE Z5 yg','lamp1.PE Z5 yg'])),sol:[],
+ measure:{q:'Łącznik WYŁĄCZONY. Co pokazuje próbnik na zacisku L lampy i co to znaczy?',opts:['Faza – łącznik przerywa N, instalacja niebezpieczna','Brak fazy – wszystko w porządku','Faza – tak ma być','Brak fazy – łącznik przerywa N'],a:0,why:'Łącznik został wpięty w przewód N, więc lampa jest stale pod napięciem fazowym. Trzeba przełożyć łącznik na fazę L.'},
+ hint:'Zasilanie WŁ, łącznik WYŁ, próbnik na zacisk L lampy.'},
+{lvl:'Pomiary miernikiem',name:'Ciągłość łącznika (bez napięcia)',desc:'Przy <b>wyłączonym zasilaniu</b> miernik działa jak <b>omomierz</b> – sprawdza ciągłość (piszczy, gdy obwód jest zamknięty).',
+ dev:DEV1(),start:SOL1,sol:[],measure:{q:'Zasilanie WYŁ, łącznik WŁ. Co pokaże miernik między zaciskami L i 1 łącznika?',opts:['≈0 Ω – ciągłość','OL – przerwa','230 V','12 V'],a:0,why:'Zamknięty łącznik ma bardzo małą rezystancję – miernik pokazuje ok. 0 Ω i piszczy. Przy łączniku WYŁ pokaże OL (przerwa).'},
+ hint:'Zasilanie musi być wyłączone. Włącz łącznik, próbnik, dotknij L i 1 łącznika.'},
+{lvl:'Pomiary miernikiem',name:'Schodowy: sprawdź ciągłość',desc:'Przewody układu schodowego są szare. Bez napięcia sprawdź <b>ciągłość</b> między łącznikami.',
+ dev:[SUP('B10'),D('lamp1','lamp','Lampa','t',1),D('A','twoway','Łącznik schodowy A','b',0),D('B','twoway','Łącznik schodowy B','b',1)],start:GRAY(SOLSCH),sol:[],
+ measure:{q:'Zasilanie WYŁ. A w poz. 1, B w poz. 2. Czy jest ciągłość między zaciskiem L łącznika A a zaciskiem L łącznika B?',opts:['Nie – OL (przerwa)','Tak – ≈0 Ω'],a:0,why:'A w poz. 1 łączy się z przewodem 1, a B w poz. 2 z przewodem 2 – droga jest przerwana, więc lampa wtedy nie świeci.'},
+ hint:'Ustaw A=1, B=2, zasilanie wyłączone, miernik na A.L i B.L.'},
+{lvl:'Pomiary miernikiem',name:'Pomiar w rozdzielnicy',board:true,cols:3,hubNames:BH,desc:'Wyłącz <b>B10 (oświetlenie)</b> i sprawdź miernikiem, czy w gnieździe nadal jest napięcie.',
+ dev:DEVR2(),start:SOLR2,sol:[],measure:{q:'B10 wyłączony, B16 załączony. Ile pokazuje miernik między L a N gniazda?',opts:['230 V','0 V'],a:0,why:'Gniazdo jest na osobnym obwodzie B16 – wyłączenie B10 odcina tylko oświetlenie. Dlatego przed pracą zawsze sprawdzamy brak napięcia!'},
+ hint:'Zasilanie WŁ, przełącz B10 na 0, miernik na L i N gniazda.'},
+// ---- Znajdź błąd
+{lvl:'Znajdź błąd',name:'Błąd: krzyżowy nie działa',fault:true,cols:3,hubs:9,desc:'Układ krzyżowy działa tylko czasem. Ktoś pomylił zaciski <b>łącznika krzyżowego</b>. Popraw.',
+ dev:[SUP('B10'),D('lamp1','lamp','Lampa','t',2),D('A','twoway','Schodowy A','b',0),D('K','cross','Krzyżowy K','b',1),D('B','twoway','Schodowy B','b',2)],ok:'parity',expect:'każde przełączenie zmienia stan lampy',
+ start:W(['sup.L Z1 br','A.L Z1 br','A.1 Z2 bk','K.1 Z2 bk','A.2 Z3 gr','K.3 Z3 gr','K.2 Z5 bk','B.1 Z5 bk','K.4 Z6 gr','B.2 Z6 gr','B.L Z9 br','lamp1.L Z9 br','sup.N Z7 bl','lamp1.N Z7 bl','sup.PE Z8 yg','lamp1.PE Z8 yg']),
+ hint:'Wejścia krzyżowego to 1 i 2, wyjścia 3 i 4. Przewody z łącznika A muszą iść do wejść.',
+ sol:W(['sup.L Z1 br','A.L Z1 br','A.1 Z2 bk','K.1 Z2 bk','A.2 Z3 gr','K.2 Z3 gr','K.3 Z5 bk','B.1 Z5 bk','K.4 Z6 gr','B.2 Z6 gr','B.L Z9 br','lamp1.L Z9 br','sup.N Z7 bl','lamp1.N Z7 bl','sup.PE Z8 yg','lamp1.PE Z8 yg'])},
+{lvl:'Znajdź błąd',name:'Błąd: czujnik ruchu nie reaguje',fault:true,desc:'Lampa z czujnikiem ruchu <b>nigdy się nie zapala</b>. Czegoś brakuje.',
+ dev:[SUP('B10'),D('lamp1','lamp','Lampa','t',1),D('PIR','pir','Czujnik ruchu','b',0)],ok:(s,l)=>l[0]===!!s[0],expect:'lampa świeci przy wykryciu ruchu',
+ start:W(['sup.L Z1 br','PIR.L Z1 br','PIR.O Z2 bk','lamp1.L Z2 bk','sup.N Z4 bl','lamp1.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg']),
+ hint:'Czujnik to układ elektroniczny – potrzebuje zasilania L i… ?',
+ sol:W(['sup.L Z1 br','PIR.L Z1 br','PIR.O Z2 bk','lamp1.L Z2 bk','sup.N Z4 bl','PIR.N Z4 bl','lamp1.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg'])},
+{lvl:'Znajdź błąd',name:'Błąd: dzwonek dzwoni bez przerwy',fault:true,desc:'Po włączeniu zasilania <b>dzwonek dzwoni non stop</b>. Sąsiedzi są wściekli. Napraw!',
+ dev:[SUP('B10'),D('bell','bell','Dzwonek 230 V','t',1),D('P','button','Przycisk','b',0)],ok:(s,l)=>l[0]===!!s[0],expect:'dzwonek tylko przy wciśniętym przycisku',
+ start:W(['sup.L Z1 br','P.L Z1 br','P.1 Z2 bk','bell.L Z1 bk','sup.N Z4 bl','bell.N Z4 bl']),
+ hint:'Skąd dzwonek bierze fazę – z przycisku czy prosto z zasilania?',
+ sol:W(['sup.L Z1 br','P.L Z1 br','P.1 Z2 bk','bell.L Z2 bk','sup.N Z4 bl','bell.N Z4 bl'])},
+{lvl:'Znajdź błąd',name:'Błąd: gniazdo działa bez karty',fault:true,cols:3,desc:'W hotelu gniazdo działa <b>nawet bez karty</b> w kieszeni. Popraw tak, by karta odcinała cały pokój.',
+ dev:[SUP('B16'),D('lamp1','lamp','Lampa','t',1),D('g1','socket','Gniazdo','t',2),D('C','card','Kieszeń na kartę','b',0),D('S','single','Łącznik','b',2)],
+ ok:(s,l)=>l[0]===!!(s[0]&&s[1])&&l[1]===!!s[0],expect:'bez karty wszystko wyłączone',
+ start:W(['sup.L Z1 br','C.L Z1 br','g1.L Z1 bk','C.O Z2 bk','S.L Z2 bk','S.1 Z3 gr','lamp1.L Z3 gr','sup.N Z4 bl','lamp1.N Z4 bl','g1.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg','g1.PE Z5 yg']),
+ hint:'Gniazdo musi brać fazę z wyjścia ↑ kieszeni, nie z zasilania.',
+ sol:W(['sup.L Z1 br','C.L Z1 br','C.O Z2 bk','S.L Z2 bk','g1.L Z2 bk','S.1 Z3 gr','lamp1.L Z3 gr','sup.N Z4 bl','lamp1.N Z4 bl','g1.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg','g1.PE Z5 yg'])},
+{lvl:'Znajdź błąd',name:'Błąd: żyrandol świeci cały',fault:true,desc:'Żyrandol zapala <b>obie sekcje jednym klawiszem</b>, a drugi klawisz nic nie robi.',
+ dev:[SUP('B10'),D('zyr','chand','Żyrandol','t',1),D('S','double','Łącznik świecznikowy','b',0)],ok:(s,l)=>l[0]===!!s[0]&&l[1]===!!s[1],expect:'klawisz 1 – sekcja L1, klawisz 2 – sekcja L2',
+ start:W(['sup.L Z1 br','S.L Z1 br','S.1 Z2 bk','zyr.L1 Z2 bk','zyr.L2 Z2 gr','S.2 Z3 gr','sup.N Z4 bl','zyr.N Z4 bl','sup.PE Z5 yg','zyr.PE Z5 yg']),
+ hint:'Do której złączki trafiła sekcja L2? A gdzie kończy się wyjście 2 łącznika?',
+ sol:W(['sup.L Z1 br','S.L Z1 br','S.1 Z2 bk','zyr.L1 Z2 bk','S.2 Z3 gr','zyr.L2 Z3 gr','sup.N Z4 bl','zyr.N Z4 bl','sup.PE Z5 yg','zyr.PE Z5 yg'])},
+{lvl:'Znajdź błąd',name:'Błąd: mostek N–PE',fault:true,desc:'W puszce ktoś zrobił <b>mostek między N a PE</b>. W instalacji z różnicówką to powoduje wybijanie. Znajdź i usuń.',
+ dev:[SUP('B16'),D('g1','socket','Gniazdo 1','b',0),D('g2','socket','Gniazdo 2','b',1)],ok:(s,l)=>l[0]&&l[1],expect:'oba gniazda pod napięciem',
+ start:W(['sup.L Z1 br','g1.L Z1 br','g2.L Z1 br','sup.N Z4 bl','g1.N Z4 bl','g2.N Z4 bl','sup.PE Z5 yg','g1.PE Z5 yg','g2.PE Z5 yg','Z4 Z5 bl']),
+ hint:'Szukaj przewodu, który łączy dwie złączki ze sobą.',
+ sol:W(['sup.L Z1 br','g1.L Z1 br','g2.L Z1 br','sup.N Z4 bl','g1.N Z4 bl','g2.N Z4 bl','sup.PE Z5 yg','g1.PE Z5 yg','g2.PE Z5 yg'])},
+{lvl:'Znajdź błąd',name:'Błąd: termostat w N',fault:true,desc:'Grzejnik działa z termostatem, ale elektryk wpiął termostat <b>nie w ten przewód</b>. Popraw.',
+ dev:[SUP('B16'),D('heater','heater','Grzejnik','t',1),D('TH','thermo','Termostat','b',0)],ok:(s,l)=>l[0]===!!s[0],expect:'grzejnik grzeje tylko gdy jest zimno',
+ start:W(['sup.L Z1 br','heater.L Z1 br','sup.N Z4 bl','TH.L Z4 bl','TH.1 Z2 bl','heater.N Z2 bl','sup.PE Z5 yg','heater.PE Z5 yg']),
+ hint:'Termostat, tak jak łącznik, musi przerywać fazę L.',
+ sol:W(['sup.L Z1 br','TH.L Z1 br','TH.1 Z2 bk','heater.L Z2 bk','sup.N Z4 bl','heater.N Z4 bl','sup.PE Z5 yg','heater.PE Z5 yg'])},
+{lvl:'Znajdź błąd',name:'Błąd: wybija różnicówka',fault:true,board:true,cols:3,hubNames:BH,nsw:true,rcd:'R',desc:'Po włączeniu lampy <b>wybija różnicówka</b>. Prąd wraca nie tą drogą, co trzeba. Znajdź błąd w rozdzielnicy.',
+ dev:DEVR3(),ok:(s,l)=>l[0]===!!(s[0]&&s[1])&&l[1]===!!(s[1]&&s[2]),expect:'różnicówka wyłącza wszystko, B10 lampę, B16 gniazdo',
+ start:W(['sup.L R.L br','sup.N R.N bl','R.LO Z1 br','F1.I Z1 br','F2.I Z1 br','F1.O Z2 br','lamp1.L Z2 br','F2.O Z3 bk','g1.L Z3 bk','R.NO Z4 bl','g1.N Z4 bl','sup.N Z6 bl','lamp1.N Z6 bl','sup.PE Z5 yg','lamp1.PE Z5 yg','g1.PE Z5 yg']),
+ hint:'Skąd bierze N lampa? Z szyny N za różnicówką czy prosto z przyłącza?',sol:SOLR3},
+{lvl:'Znajdź błąd',name:'Błąd: zamienione wyłączniki',fault:true,board:true,cols:3,hubNames:BH,desc:'Oświetlenie wisi na <b>B16</b>, a gniazdo na <b>B10</b> – odwrotnie niż w opisie rozdzielnicy. Popraw.',
+ dev:DEVR2(),ok:(s,l)=>l[0]===!!s[0]&&l[1]===!!s[1],expect:'B10 – oświetlenie, B16 – gniazda',
+ start:W(['sup.L Z1 br','F1.I Z1 br','F2.I Z1 br','F1.O Z3 br','lamp1.L Z2 br','F2.O Z2 bk','g1.L Z3 bk','sup.N Z4 bl','lamp1.N Z4 bl','g1.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z5 yg','g1.PE Z5 yg']),
+ hint:'Prześledź, do której złączki idzie wyjście B10, a do której B16.',sol:SOLR2}
+);
+// ======== NOWE: trójfaza, pomiary ochronne, projekt mieszkania ========
+const SUP3=()=>D('sup','supply3','Przyłącze 3f C16','t',0);
+const SOL3G=W(['sup.L1 Z1 br','g3.L1 Z1 br','sup.L2 Z2 bk','g3.L2 Z2 bk','sup.L3 Z3 gr','g3.L3 Z3 gr','sup.N Z4 bl','g3.N Z4 bl','sup.PE Z5 yg','g3.PE Z5 yg']);
+const SOL3M=W(['sup.L1 Z1 br','M.U Z1 br','sup.L2 Z2 bk','M.V Z2 bk','sup.L3 Z3 gr','M.W Z3 gr','sup.PE Z5 yg','M.PE Z5 yg']);
+const PH={lvl:'Trójfaza 400 V',three:true};
+const PJ_HUBS=[[140,145],[220,145],[70,265],[120,265],[70,318],[120,318],[232,262],[267,262],[302,262],[232,318],[267,318],[302,318]];
+const PJ_AREAS=[{t:'rect',x:20,y:120,w:320,h:50,label:'Rozdzielnica – szyny N i PE'},{t:'circle',cx:95,cy:292,r:80,label:'Puszka – przedpokój'},{t:'circle',cx:267,cy:292,r:80,label:'Puszka – pokój'}];
+const PJ_BOT={S1:[4,410,70,505,'b'],lamp1:[75,410,141,505,'b'],lamp2:[146,410,212,505,'b'],S2:[217,410,283,505,'b'],g1:[288,410,354,505,'b']};
+const PJ3=Object.assign({sup:[5,10,115,100,'t'],F1:[125,10,235,100,'t'],F2:[245,10,355,100,'t']},PJ_BOT);
+const PJ4=Object.assign({sup:[4,10,88,100,'t'],R:[93,10,177,100,'t'],F1:[182,10,266,100,'t'],F2:[271,10,355,100,'t']},PJ_BOT);
+const PJ_ROOM=()=>[D('S1','single','Łącznik przedp.','b',0),D('lamp1','lamp','Lampa przedp.','b',0),D('lamp2','lamp','Lampa pokój','b',0),D('S2','single','Łącznik pokój','b',0),D('g1','socket','Gniazdo pokój','b',0)];
+const PJ_REST=['F1.O Z3 br','S1.L Z3 br','S1.1 Z4 bk','lamp1.L Z4 bk','Z1 Z5 bl','lamp1.N Z5 bl','Z2 Z6 yg','lamp1.PE Z6 yg','Z3 Z7 br','S2.L Z7 br','S2.1 Z8 bk','lamp2.L Z8 bk','F2.O Z9 br','g1.L Z9 br','Z1 Z10 bl','lamp2.N Z10 bl','g1.N Z10 bl','Z2 Z11 yg','lamp2.PE Z11 yg','g1.PE Z11 yg'];
+const PJ1_SOL=W(['sup.L F1.I br','sup.L F2.I br','sup.N Z1 bl','sup.PE Z2 yg',...PJ_REST]);
+const PJ2_SOL=W(['sup.L R.L br','sup.N R.N bl','R.LO F1.I br','R.LO F2.I br','R.NO Z1 bl','sup.PE Z2 yg',...PJ_REST]);
+const PJ={lvl:'Projekt mieszkania',board:true,vh:520,hubsXY:PJ_HUBS,areas:PJ_AREAS,hubNames:{Z1:'N',Z2:'PE'}};
+const PJ1_DEV=()=>[BOARD('Przyłącze'),D('F1','mcb','B10 światło','t',1),D('F2','mcb','B16 gniazda','t',2),...PJ_ROOM()];
+const PJ2_DEV=()=>[BOARD('Przyłącze'),D('R','rcd','RCD 30 mA','t',1),D('F1','mcb','B10 światło','t',2),D('F2','mcb','B16 gniazda','t',3),...PJ_ROOM()];
+const PJ1_OK=(s,l)=>l[0]===!!(s[0]&&s[2])&&l[1]===!!(s[0]&&s[3])&&l[2]===!!s[1];
+const PJ2_OK=(s,l)=>l[0]===!!(s[0]&&s[1]&&s[3])&&l[1]===!!(s[0]&&s[1]&&s[4])&&l[2]===!!(s[0]&&s[2]);
+SC.push(
+// ---- Trójfaza
+Object.assign({},PH,{name:'Gniazdo siłowe 400 V',desc:'Podłącz <b>gniazdo siłowe 5-bolcowe</b> (L1, L2, L3, N, PE). Zachowaj kolejność faz i kolory: L1 brązowy, L2 czarny, L3 szary. Obwód C16 – przekrój <b>2,5 mm²</b>.',
+ dev:[SUP3(),D('g3','socket3','Gniazdo 400 V','t',1)],ok:(s,l,d)=>l[0]&&d[0]>0,expect:'gniazdo zasilone, kolejność faz L1-L2-L3',
+ hint:'Pięć złączek: L1, L2, L3, N i PE – każda łączy przyłącze z tym samym zaciskiem gniazda. Pamiętaj o przekroju 2,5 mm².',sol:SOL3G}),
+Object.assign({},PH,{name:'Silnik trójfazowy',desc:'Podłącz <b>silnik 3~</b> (zaciski U, V, W, PE). Silnik ma się kręcić <b>w prawo</b>. Silnik nie potrzebuje N.',
+ dev:[SUP3(),D('M','motor','Silnik 3~','t',1)],ok:(s,l,d)=>l[0]&&d[0]>0,expect:'silnik kręci się w prawo',
+ hint:'L1 → U, L2 → V, L3 → W, PE → PE obudowy silnika.',sol:SOL3M}),
+Object.assign({},PH,{name:'Zmiana kierunku obrotów',desc:'Silnik kręci się w prawo, a ma się kręcić <b>w lewo</b> (np. pompa, przenośnik). Przełóż przewody.',
+ dev:[SUP3(),D('M','motor','Silnik 3~','t',1)],start:SOL3M,ok:(s,l,d)=>l[0]&&d[0]<0,expect:'silnik kręci się w lewo',
+ hint:'Wystarczy zamienić miejscami DWIE dowolne fazy na zaciskach silnika.',
+ sol:W(['sup.L1 Z1 br','M.U Z1 br','sup.L2 Z2 bk','M.W Z2 bk','sup.L3 Z3 gr','M.V Z3 gr','sup.PE Z5 yg','M.PE Z5 yg'])}),
+Object.assign({},PH,{name:'Silnik z wyłącznikiem 3P',hubs:9,desc:'Silnik zasilany przez <b>wyłącznik trójbiegunowy C16</b>. Wejścia 1-3-5 od przyłącza, wyjścia 2-4-6 do silnika. Kierunek: w prawo.',
+ dev:[SUP3(),D('M','motor','Silnik 3~','t',1),D('Q','mcb3','Wyłącznik C16 3P','b',0)],ok:(s,l,d)=>l[0]===!!s[0]&&(!s[0]||d[0]>0),expect:'silnik kręci się w prawo przy załączonym wyłączniku',
+ hint:'L1 → 1, L2 → 3, L3 → 5. Wyjścia: 2 → U, 4 → V, 6 → W (przez złączki). PE prosto do silnika.',
+ sol:W(['sup.L1 Z1 br','Q.1 Z1 br','sup.L2 Z2 bk','Q.3 Z2 bk','sup.L3 Z3 gr','Q.5 Z3 gr','Q.2 Z4 br','M.U Z4 br','Q.4 Z5 bk','M.V Z5 bk','Q.6 Z6 gr','M.W Z6 gr','sup.PE Z8 yg','M.PE Z8 yg'])}),
+Object.assign({},PH,{name:'Gniazdo 400 V + 230 V',desc:'Z jednej puszki: <b>gniazdo siłowe 400 V</b> oraz zwykłe <b>gniazdo 230 V</b> (faza L1 + N).',
+ dev:[SUP3(),D('g3','socket3','Gniazdo 400 V','t',1),D('g1','socket','Gniazdo 230 V','b',1)],ok:(s,l,d)=>l[0]&&d[0]>0&&l[1],expect:'oba gniazda zasilone, kolejność faz OK',
+ hint:'Gniazdo 230 V bierze fazę L1 (ze złączki L1), N i PE ze wspólnych złączek.',
+ sol:W(['sup.L1 Z1 br','g3.L1 Z1 br','g1.L Z1 br','sup.L2 Z2 bk','g3.L2 Z2 bk','sup.L3 Z3 gr','g3.L3 Z3 gr','sup.N Z4 bl','g3.N Z4 bl','g1.N Z4 bl','sup.PE Z5 yg','g3.PE Z5 yg','g1.PE Z5 yg'])}),
+Object.assign({},PH,{name:'Pomiar: napięcie międzyfazowe',desc:'Zmierz <b>miernikiem</b> napięcia w gnieździe 400 V: między fazami oraz faza–N.',
+ dev:[SUP3(),D('g3','socket3','Gniazdo 400 V','t',1)],start:SOL3G,sol:[],
+ measure:{q:'Ile pokazuje miernik między L1 a L2 gniazda?',opts:['230 V','400 V','0 V','690 V'],a:1,why:'Między fazami jest napięcie międzyfazowe 400 V (√3 × 230 V), a między fazą a N – 230 V.'},
+ hint:'Zasilanie WŁ, próbnik, dotknij L1 i L2 gniazda.'}),
+Object.assign({},PH,{lvl:'Znajdź błąd',name:'Błąd: silnik buczy i nie rusza',fault:true,desc:'Silnik <b>buczy, grzeje się i nie rusza</b>. Brakuje jednej fazy – dwa zaciski siedzą na tej samej.',
+ dev:[SUP3(),D('M','motor','Silnik 3~','t',1)],ok:(s,l,d)=>l[0]&&d[0]>0,expect:'silnik kręci się w prawo',
+ start:W(['sup.L1 Z1 br','M.U Z1 br','M.V Z1 br','sup.L2 Z2 bk','sup.L3 Z3 gr','M.W Z3 gr','sup.PE Z5 yg','M.PE Z5 yg']),
+ hint:'Na której złączce są dwa zaciski silnika? Zaciski U, V, W muszą dostać trzy RÓŻNE fazy.',sol:SOL3M}),
+// ---- Pomiary ochronne
+{lvl:'Pomiary ochronne',name:'Izolacja: który obwód?',board:true,cols:3,hubNames:BH,desc:'Tryb miernika <b>„Izolacja”</b>, zasilanie WYŁ. Zmierz rezystancję izolacji L–PE w obu obwodach. Wyłącz oba wyłączniki, żeby mierzyć każdy obwód osobno.',
+ dev:DEVR2(),start:SOLR2,sol:[],leak:[['g1.L','g1.PE',0.18]],
+ measure:{q:'Który obwód ma uszkodzoną izolację?',opts:['Obwód oświetlenia (B10)','Obwód gniazd (B16)','Oba są sprawne'],a:1,why:'L–PE w gnieździe: 0,18 MΩ, czyli poniżej wymaganego 1 MΩ. Oświetlenie ma > 999 MΩ. Trzeba szukać uszkodzonego przewodu lub gniazda.'},
+ hint:'Zasilanie WYŁ, oba wyłączniki na 0. Miernik → Izolacja. Zmierz Lampa L ↔ Lampa PE oraz Gniazdo L ↔ Gniazdo PE.'},
+{lvl:'Pomiary ochronne',name:'Izolacja: gdzie uszkodzenie?',desc:'Przy pomiarze izolacji wynik zależy od <b>położenia łącznika</b>. Zmierz L–PE na zasilaniu przy łączniku WYŁ i WŁ.',
+ dev:DEV1(),start:SOL1,sol:[],leak:[['S.1','sup.PE',0.25]],
+ measure:{q:'Łącznik WYŁ: > 999 MΩ, łącznik WŁ: 0,25 MΩ. Gdzie jest uszkodzona izolacja?',opts:['Przewód łączeniowy łącznik → lampa','Przewód fazowy z zasilania','Przewód N'],a:0,why:'Uszkodzenie „pojawia się” dopiero po włączeniu łącznika, czyli jest na odcinku za łącznikiem – w przewodzie łączeniowym do lampy.'},
+ hint:'Miernik → Izolacja, zasilanie WYŁ. Punkty: Zasilanie L i Zasilanie PE. Przełączaj łącznik.'},
+{lvl:'Pomiary ochronne',name:'Pętla zwarcia – dobry wynik',board:true,cols:3,hubNames:BH,zs:0.74,desc:'Tryb <b>„Pętla Zs”</b>, zasilanie WŁ. Zmierz impedancję pętli zwarcia w gnieździe (L–PE).',
+ dev:DEVR2(),start:SOLR2,sol:[],measure:{q:'Czy wyłącznik B16 zadziała przy zwarciu wystarczająco szybko (warunek Zs ≤ 2,87 Ω)?',opts:['Tak – warunek spełniony','Nie – Zs za duże'],a:0,why:'0,74 Ω < 2,87 Ω (230 V / (5 × 16 A)). Prąd zwarcia ok. 311 A wyłączy B16 natychmiast.'},
+ hint:'Miernik → Pętla Zs, zasilanie WŁ, punkty: Gniazdo L i Gniazdo PE.'},
+{lvl:'Pomiary ochronne',name:'Pętla zwarcia – za długi obwód',board:true,cols:3,hubNames:BH,zs:3.4,desc:'Gniazdo w garażu na końcu <b>bardzo długiego</b> przewodu. Zmierz Zs w gnieździe.',
+ dev:DEVR2(),start:SOLR2,sol:[],measure:{q:'Wynik Zs i ocena:',opts:['Zs w normie, wszystko OK','Zs za duże – trzeba skrócić/pogrubić przewód lub zmienić zabezpieczenie'],a:1,why:'3,40 Ω > 2,87 Ω – prąd zwarcia tylko ok. 68 A, za mało, by B16 zadziałał natychmiast. To niebezpieczne.'},
+ hint:'Miernik → Pętla Zs, zasilanie WŁ, Gniazdo L ↔ Gniazdo PE.'},
+{lvl:'Pomiary ochronne',name:'Test różnicówki',board:true,cols:3,hubNames:BH,nsw:true,rcd:'R',rcdT:23,desc:'Tryb <b>„Test RCD”</b>: miernik wymusza upływ 30 mA i mierzy czas zadziałania. Wykonaj test w gnieździe.',
+ dev:DEVR3(),start:SOLR3,sol:[],measure:{q:'Czy różnicówka działa prawidłowo?',opts:['Tak – zadziałała w 23 ms','Nie – nie zadziałała'],a:0,why:'Norma wymaga ≤ 300 ms przy 30 mA. Dodatkowo co pół roku naciśnij przycisk TEST na różnicówce.'},
+ hint:'Zasilanie WŁ, miernik → Test RCD, dotknij L gniazda.'},
+{lvl:'Pomiary ochronne',name:'Uszkodzona różnicówka',board:true,cols:3,hubNames:BH,nsw:true,rcd:'R',rcdT:0,desc:'Wykonaj <b>test RCD</b> w gnieździe i oceń wynik.',
+ dev:DEVR3(),start:SOLR3,sol:[],measure:{q:'Co trzeba zrobić?',opts:['Nic – wszystko w porządku','Wymienić różnicówkę – nie zadziałała','Wymienić gniazdo'],a:1,why:'Różnicówka nie zadziałała – nie chroni przed porażeniem. Trzeba ją natychmiast wymienić.'},
+ hint:'Zasilanie WŁ, miernik → Test RCD, dotknij L gniazda.'},
+{lvl:'Pomiary ochronne',name:'Ciągłość przewodu PE',desc:'Sprawdź <b>ciągłość przewodu ochronnego</b> do lampy (zasilanie WYŁ, tryb Multimetr = Ω). Przewody są szare.',
+ dev:DEV1(),start:GRAY(W(['sup.L Z1 br','S.L Z1 br','S.1 Z2 bk','lamp1.L Z2 bk','sup.N Z4 bl','lamp1.N Z4 bl','sup.PE Z5 yg','lamp1.PE Z6 yg'])),sol:[],
+ measure:{q:'Wynik między PE zasilania a PE lampy:',opts:['≈0 Ω – PE ciągły','OL – przerwa w PE, obudowa bez ochrony'],a:1,why:'OL oznacza przerwę: PE lampy trafił do pustej złączki. Metalowa obudowa nie jest chroniona!'},
+ hint:'Zasilanie WYŁ, miernik → Multimetr, dotknij Zasilanie PE i Lampa PE.'},
+// ---- Projekt mieszkania
+Object.assign({},PJ,{name:'Projekt: przedpokój + pokój',pos:PJ3,desc:'<b>Mini-mieszkanie</b>: rozdzielnica (B10 światło, B16 gniazda), szyny N i PE, <b>dwie puszki</b>. Przedpokój: lampa + łącznik. Pokój: lampa + łącznik + gniazdo. Fazę oświetlenia przeprowadź z puszki przedpokoju do pokoju (przelot).',
+ dev:PJ1_DEV(),ok:PJ1_OK,expect:'B10 + łączniki sterują lampami, B16 zasila gniazdo',
+ hint:'B10 → puszka przedpokoju (złączka L), stąd łącznik i przelot do puszki pokoju. B16 → osobna złączka w puszce pokoju → gniazdo (2,5 mm²!). N i PE z szyn do obu puszek.',sol:PJ1_SOL}),
+Object.assign({},PJ,{name:'Projekt: mieszkanie z RCD',pos:PJ4,nsw:true,rcd:'R',desc:'To samo mieszkanie, ale z <b>różnicówką 30 mA</b> przed wyłącznikami. N do szyny bierz z wyjścia N↓ różnicówki.',
+ dev:PJ2_DEV(),ok:PJ2_OK,expect:'RCD wyłącza wszystko, B10 światło, B16 gniazdo, łączniki lampy',
+ hint:'Przyłącze L i N → górne zaciski RCD. L↓ → wejścia B10 i B16. N↓ → szyna N. PE z przyłącza prosto na szynę PE.',sol:PJ2_SOL}),
+Object.assign({},PJ,{name:'Projekt: odbiór instalacji',pos:PJ4,nsw:true,rcd:'R',rcdT:26,zs:0.58,desc:'Mieszkanie gotowe. Zrób <b>pomiary odbiorcze</b>: test RCD i pętlę Zs w gnieździe pokoju.',
+ dev:PJ2_DEV(),start:PJ2_SOL,sol:[],measure:{q:'Czy instalacja nadaje się do odbioru?',opts:['Tak – RCD 26 ms, Zs 0,58 Ω','Nie – RCD nie działa','Nie – Zs za duże'],a:0,why:'RCD zadziałał w 26 ms (≤ 300 ms), Zs = 0,58 Ω (≤ 2,87 Ω dla B16). Można wpisać wyniki do protokołu.'},
+ hint:'Miernik → Pętla Zs (Gniazdo L ↔ PE), potem Test RCD (Gniazdo L).'}),
+Object.assign({},PJ,{lvl:'Znajdź błąd',name:'Błąd: w pokoju nie ma światła',fault:true,pos:PJ3,desc:'W przedpokoju światło działa, a w pokoju <b>lampa nie świeci</b>, choć gniazdo działa. Coś nie dochodzi do puszki pokoju.',
+ dev:PJ1_DEV(),ok:PJ1_OK,expect:'B10 + łączniki sterują lampami, B16 zasila gniazdo',start:W(['sup.L F1.I br','sup.L F2.I br','sup.N Z1 bl','sup.PE Z2 yg',...PJ_REST.filter(x=>x!=='Z3 Z7 br')]),
+ hint:'Sprawdź miernikiem: czy w puszce pokoju (złączka L dla łącznika) jest faza? Brakuje przelotu z puszki przedpokoju.',sol:PJ1_SOL}),
+Object.assign({},PJ,{lvl:'Znajdź błąd',name:'Błąd: za cienki przewód do gniazda',fault:true,pos:PJ3,thin:[16,17],desc:'Inspektor nie odebrał mieszkania: obwód gniazd <b>B16</b> wykonano zbyt cienkim przewodem.',
+ dev:PJ1_DEV(),ok:PJ1_OK,expect:'B10 + łączniki sterują lampami, B16 zasila gniazdo',start:PJ1_SOL,
+ hint:'Cieńsze linie = 1,5 mm². Wybierz 2,5 mm² i poprowadź ponownie przewody od B16 do gniazda.',sol:PJ1_SOL}),
+{lvl:'Znajdź błąd',name:'Błąd: gniazda na 1,5 mm²',fault:true,thin:'all',desc:'Obwód gniazd <b>B16</b> ułożono przewodem <b>1,5 mm²</b>. Przy obciążeniu 16 A przewód się przegrzewa. Popraw przekrój.',
+ dev:[SUP('B16'),D('g1','socket','Gniazdo 1','b',0),D('g2','socket','Gniazdo 2','b',1)],ok:(s,l)=>l[0]&&l[1],expect:'oba gniazda pod napięciem',
+ start:W(['sup.L Z1 br','g1.L Z1 br','g2.L Z1 br','sup.N Z4 bl','g1.N Z4 bl','g2.N Z4 bl','sup.PE Z5 yg','g1.PE Z5 yg','g2.PE Z5 yg']),
+ hint:'Wybierz przekrój 2,5 mm² i naciśnij „ustaw na wszystkich”.',sol:W(['sup.L Z1 br','g1.L Z1 br','g2.L Z1 br','sup.N Z4 bl','g1.N Z4 bl','g2.N Z4 bl','sup.PE Z5 yg','g1.PE Z5 yg','g2.PE Z5 yg'])}
+);
+
+const ORDER=['Podstawy','Średnie','Zaawansowane','Hotel i klatka schodowa','Rozdzielnica','Trójfaza 400 V','Projekt mieszkania','Pomiary miernikiem','Pomiary ochronne','Znajdź błąd'];
+SC.sort((a,b)=>ORDER.indexOf(a.lvl)-ORDER.indexOf(b.lvl));
+
+// ---------- state ----------
+let usedSol=false,fails=0,hintUsed=false,t0=Date.now(),probe=false,probeP=[],muted=false,exam=null,cur=0,wires=[],hist=[],sel=null,color='br',power=false,st=[],flash=false;
+let HUBCAP={},xsel=1.5,mmode='v',rcdRes=null,TERMS=[],TM={},LOADS=[],TOGGLES=[],HUBS=[],RELAYS=[],rs=[],rsPrev=[],rsEnd=[],timerIv=null;
+const K=(k,n)=>n?k+':'+n:k;let done={},best={}; try{const n0=localStorage.getItem('sym-nick')||'';done=JSON.parse(localStorage.getItem(K('sym-stars',n0))||'{}');best=JSON.parse(localStorage.getItem(K('sym-best',n0))||'{}')}catch(e){}
+const svg=document.getElementById('svg'),NS='http://www.w3.org/2000/svg',$=id=>document.getElementById(id);
+
+function boxOf(d){const s=SC[cur];if(s.pos&&s.pos[d.id]){const p=s.pos[d.id];d.row=p[4];return p.slice(0,4)}const cols=s.cols||2;let x1,x2;if(cols===4){x1=4+d.col*89;x2=x1+84;return d.row==='t'?[x1,10,x2,100]:[x1,405,x2,515]}
+ if(cols===2){[x1,x2]=d.col===0?[15,140]:[220,345]}else{x1=5+d.col*120;x2=x1+110}
+ return d.row==='t'?[x1,10,x2,100]:[x1,405,x2,515]}
+
+function build(){
+ const s=SC[cur];TERMS=[];LOADS=[];TOGGLES=[];RELAYS=[];
+ s.dev.forEach(d=>{
+  d.box=boxOf(d);const [x1,,x2]=d.box,ks=KIND[d.kind],n=ks.length,cx=(x1+x2)/2;
+  const sp=Math.min(34,(x2-x1-24)/(n-1));
+  d.t=ks.map((k,i)=>({id:d.id+'.'+k[0],label:k[1],role:k[2],x:cx+(i-(n-1)/2)*sp,y:d.row==='t'?d.box[3]-10:d.box[1]+23,dev:d,hr:sp<26?10:13}));
+  TERMS.push(...d.t);
+  const T=k=>d.id+'.'+k;
+  if(LOADK.includes(d.kind)){
+   if(d.kind==='socket3')LOADS.push({dev:d,ph:[T('L1'),T('L2'),T('L3')],N:T('N'),PE:T('PE'),name:d.title});
+   else if(d.kind==='motor')LOADS.push({dev:d,ph:[T('U'),T('V'),T('W')],N:null,PE:T('PE'),name:d.title});
+   else if(d.kind==='chand'){LOADS.push({dev:d,L:T('L1'),N:T('N'),PE:T('PE'),name:d.title+' – sekcja L1',sub:0});LOADS.push({dev:d,L:T('L2'),N:T('N'),PE:T('PE'),name:d.title+' – sekcja L2',sub:1})}
+   else LOADS.push({dev:d,L:T('L'),N:T('N'),PE:d.kind==='bell'?null:T('PE'),name:d.title});
+  }
+  if(d.kind==='single')TOGGLES.push({dev:d,name:d.title,states:['WYŁ','WŁ'],sh:['WYŁ','WŁ'],pairs:[[],[[T('L'),T('1')]]]});
+  if(d.kind==='button')TOGGLES.push({dev:d,name:d.title,states:['puszczony','wciśnięty'],sh:['—','WCIŚN.'],pairs:[[],[[T('L'),T('1')]]]});
+  if(d.kind==='double'){TOGGLES.push({dev:d,name:d.title+' – klawisz 1',states:['WYŁ','WŁ'],sh:['1','1'],pairs:[[],[[T('L'),T('1')]]]});TOGGLES.push({dev:d,name:d.title+' – klawisz 2',states:['WYŁ','WŁ'],sh:['2','2'],pairs:[[],[[T('L'),T('2')]]]})}
+  if(d.kind==='twoway')TOGGLES.push({dev:d,name:d.title,states:['poz. 1','poz. 2'],sh:['1','2'],pairs:[[[T('L'),T('1')]],[[T('L'),T('2')]]]});
+  if(d.kind==='cross')TOGGLES.push({dev:d,name:d.title,states:['poz. 1 (1-3, 2-4)','poz. 2 (1-4, 2-3)'],sh:['=','X'],pairs:[[[T('1'),T('3')],[T('2'),T('4')]],[[T('1'),T('4')],[T('2'),T('3')]]]});
+  if(d.kind==='dimmer')TOGGLES.push({dev:d,name:d.title,states:['WYŁ','WŁ'],sh:['WYŁ','WŁ'],pairs:[[],[[T('L'),T('1')]]]});
+  if(d.kind==='thermo')TOGGLES.push({dev:d,name:d.title,states:['ciepło 22°C','zimno 17°C'],sh:['22°C','17°C'],pairs:[[],[[T('L'),T('1')]]]});
+  if(d.kind==='dp')TOGGLES.push({dev:d,name:d.title,states:['WYŁ','WŁ'],sh:['WYŁ','WŁ'],pairs:[[],[[T('L'),T('1')],[T('N'),T('2')]]]});
+  if(d.kind==='dusk')TOGGLES.push({dev:d,name:d.title,states:['dzień','noc'],sh:['DZIEŃ','NOC'],pairs:[[],[[T('L'),T('O')]]],power:[T('L'),T('N')]});
+  if(d.kind==='mcb3')TOGGLES.push({dev:d,name:d.title,init:1,states:['wyłączony','załączony'],sh:['0','I'],pairs:[[],[[T('1'),T('2')],[T('3'),T('4')],[T('5'),T('6')]]]});
+  if(d.kind==='mcb')TOGGLES.push({dev:d,name:d.title,init:1,states:['wyłączony','załączony'],sh:['0','I'],pairs:[[],[[T('I'),T('O')]]]});
+  if(d.kind==='rcd')TOGGLES.push({dev:d,name:d.title,init:1,states:['wyłączony','załączony'],sh:['0','I'],pairs:[[],[[T('L'),T('LO')],[T('N'),T('NO')]]]});
+  if(d.kind==='card')TOGGLES.push({dev:d,name:d.title,states:['karta wyjęta','karta włożona'],sh:['—','KARTA'],pairs:[[],[[T('L'),T('O')]]]});
+  if(d.kind==='timer'||d.kind==='bist')RELAYS.push({dev:d,name:d.title,L:T('L'),N:T('N'),S:T('S'),O:T('O')});
+  if(d.kind==='pir')TOGGLES.push({dev:d,name:d.title,states:['brak ruchu','ruch'],sh:['—','RUCH'],pairs:[[],[[T('L'),T('O')]]],power:[T('L'),T('N')]});
+ });
+ HUBS=s.hubsXY||HUBSETS[s.hubs||6];
+ HUBS.forEach((h,i)=>TERMS.push({id:'Z'+(i+1),label:'Z'+(i+1),x:h[0],y:h[1],role:'hub',hub:true}));
+ TM={};TERMS.forEach(t=>TM[t.id]=t);
+ HUBCAP={};HUBS.forEach((h,i)=>{const z='Z'+(i+1);let mx=0;[s.sol||[],s.start||[]].forEach(l=>{mx=Math.max(mx,l.filter(w=>w[0]===z||w[1]===z).length)});HUBCAP[z]=mx>0&&mx<=3?3:5});
+}
+function label(id){const t=TM[id];return t.hub?'złączka '+t.label:t.dev.title+' – '+t.label}
+
+function nets(extra){const p={};const f=x=>{if(p[x]===undefined)p[x]=x;return p[x]===x?x:(p[x]=f(p[x]))};
+ const u=(a,b)=>{p[f(a)]=f(b)};TERMS.forEach(t=>f(t.id));wires.forEach(w=>u(w.a,w.b));(extra||[]).forEach(e=>u(e[0],e[1]));return f}
+function evaluate(states){
+ const s=SC[cur],nt=TOGGLES.length,SPH=s.three?['sup.L1','sup.L2','sup.L3']:['sup.L'];
+ let ex=[];TOGGLES.forEach((t,i)=>{if(!t.power)ex.push(...t.pairs[states[i]?1:0])});
+ const f0=nets(ex);const pirOk=[];
+ TOGGLES.forEach((t,i)=>{if(t.power){const ok=f0(t.power[0])===f0(SPH[0])&&f0(t.power[1])===f0('sup.N');pirOk.push(ok);if(ok)ex.push(...t.pairs[states[i]?1:0])}});
+ const f1=nets(ex),relPow=[],coil=[];
+ RELAYS.forEach((r,j)=>{const pw=f1(r.L)===f1(SPH[0])&&f1(r.N)===f1('sup.N');relPow.push(pw);coil.push(pw&&f1(r.S)===f1(SPH[0]));if(pw&&states[nt+j])ex.push([r.L,r.O])});
+ const f=nets(ex),phN=SPH.map(x=>f(x)),L=phN[0],N=f('sup.N'),PE=f('sup.PE');
+ const short=new Set(phN).size<phN.length||phN.includes(N)||phN.includes(PE);
+ const dir=[];
+ const lit=LOADS.map((ld,i)=>{dir[i]=0;if(short)return false;
+  if(ld.ph){const ix=ld.ph.map(t=>phN.indexOf(f(t)));if(ix.some(k=>k<0)||new Set(ix).size<3)return false;if(ld.N&&f(ld.N)!==N)return false;dir[i]=((ix[1]-ix[0]+3)%3===1)?1:-1;return true}
+  const a=f(ld.L),b=f(ld.N);return (phN.includes(a)&&b===N)||(a===N&&phN.includes(b))});
+ const pol=LOADS.map(ld=>!ld.N||f(ld.N)===N);
+ return {f,L,N,PE,phN,short,nPe:N===PE,lit,pol,pirOk,relPow,coil,dir};
+}
+function combos(){const n=TOGGLES.length+RELAYS.length,r=[];for(let i=0;i<(1<<n);i++)r.push([...Array(n)].map((_,k)=>(i>>k)&1));return r}
+function stDesc(s){return [...TOGGLES.map((t,i)=>t.name+': '+t.states[s[i]]),...RELAYS.map((r,j)=>r.name+': '+(s[TOGGLES.length+j]?'załączony':'wyłączony'))].join(', ')||'stan stały'}
+function loadState(i,on,ev){const k=LOADS[i].dev.kind;if(k==='motor')return on?(ev&&ev.dir[i]<0?'kręci się w lewo ↺':'kręci się w prawo ↻'):'stoi';if(k==='socket3')return on?(ev&&ev.dir[i]<0?'napięcie, ale odwrotna kolejność faz':'400 V, kolejność faz OK'):'brak napięcia';return on?(k==='heater'?'grzeje':k==='socket'?'napięcie':k==='fan'?'kręci się':k==='bell'?'dzwoni':'świeci'):(k==='socket'?'brak napięcia':k==='fan'?'stoi':k==='bell'?'cisza':k==='heater'?'zimny':'nie świeci')}
+
+function check(){
+ if(SC[cur].measure){askMeasure();return}
+ const s=SC[cur],out=[],seen=new Set(),add=(t,m)=>{if(!seen.has(m)){seen.add(m);out.push([t,m])}};
+ if(!wires.length){show([['info','Nie ma jeszcze żadnych przewodów. Zacznij od połączenia L zasilania z jedną ze złączek.']]);return}
+ const used=new Set();wires.forEach(w=>{used.add(w.a);used.add(w.b)});
+ const needPE=LOADS.some(l=>l.PE);
+ const needN=LOADS.some(l=>l.N)||RELAYS.length||TOGGLES.some(t=>t.power);
+ const free=TERMS.filter(t=>!t.hub&&!used.has(t.id)&&!(t.id==='sup.PE'&&!needPE)&&!(t.id==='sup.N'&&!needN)).map(t=>t.dev.title+' – '+t.label);
+ if(free.length)add('err','Niepodłączone zaciski: '+free.join(', ')+'.');
+ const tab=combos().map(c=>({c,e:evaluate(c)}));
+ const sh=tab.find(r=>r.e.short);
+ if(sh)add('err','💥 Zwarcie'+(TOGGLES.length?' ('+stDesc(sh.c)+')':'')+' – '+(s.three?'fazy łączą się ze sobą albo z N/PE':'faza L łączy się bezpośrednio z '+(sh.e.L===sh.e.N?'N':'PE'))+'. Zadziałałby wyłącznik nadprądowy lub różnicowoprądowy.');
+ if(tab.some(r=>r.e.nPe))add('err','Przewód N jest połączony z PE – w instalacji TN-S to niedopuszczalne (zadziała wyłącznik różnicowoprądowy).');
+ if(!sh){
+  let good;const nt=TOGGLES.length;
+  if(RELAYS.length){good=true;
+   RELAYS.forEach((r,j)=>{
+    if(tab.some(x=>!x.e.relPow[j])){good=false;add('err',r.name+': brak zasilania – zaciski L i N przekaźnika muszą być połączone z L i N zasilania.')}
+    else{
+     if(tab.some(x=>x.e.coil[j]!==x.c.slice(0,nt).some(v=>v))){good=false;add('err',r.name+': wejście sterujące S musi dostać fazę po wciśnięciu dowolnego przycisku – i tylko wtedy. Przyciski łączymy równolegle: L do wszystkich przycisków, wyjścia wszystkich przycisków do S.')}
+     if(tab.some(x=>x.e.lit.some(l=>l!==!!x.c[nt+j]))){good=false;add('err','Lampa musi być zasilana wyłącznie z wyjścia ↑ przekaźnika (teraz świeci niezależnie od przekaźnika albo wcale).')}
+    }});
+  }
+  else if(s.okT)good=s.okT(tab.map(r=>({c:r.c,l:r.e.lit,d:r.e.dir})));
+  else if(s.ok==='parity'){const b=tab.map(r=>r.e.lit[0]!==!!r.c.reduce((a,x)=>a^x,0));good=b.every(v=>v===b[0])}
+  else good=tab.every(r=>s.ok(r.c,r.e.lit,r.e.dir));
+  if(!good&&!RELAYS.length){
+   let rows=tab.map(r=>(TOGGLES.length?stDesc(r.c)+' → ':'')+r.e.lit.map((l,i)=>LOADS[i].name+': '+loadState(i,l,r.e)).join(', '));
+   const more=rows.length>8?'<br>• … ('+(rows.length-8)+' kolejnych kombinacji)':'';rows=rows.slice(0,8);
+   add('err','Układ nie działa jak powinien ('+s.expect+'). Wynik symulacji:<br>• '+rows.join('<br>• ')+more);
+   if(tab.some(r=>r.e.pirOk.some(x=>!x)))add('err','Czujnik nie ma zasilania – jego zaciski L i N muszą być połączone z L i N zasilania.');
+  }
+  LOADS.forEach((ld,i)=>{
+   const touched=used.has(ld.L)||used.has(ld.N)||(ld.ph&&ld.ph.some(x=>used.has(x)));if(!touched||!ld.N)return;
+   if(ld.dev.kind==='socket'){if(tab.some(r=>r.e.lit[i]&&!r.e.pol[i]))add('warn',ld.dev.title+': zamienione L i N. Gniazdo zadziała, ale fazę podłącza się do zacisku L.')}
+   else if(!s.nsw&&tab.some(r=>r.e.f(ld.N)!==r.e.N))add('err',ld.dev.title+': zacisk N nie jest połączony bezpośrednio z N zasilania. Łącznik musi przerywać fazę L, a nie przewód neutralny – inaczej wyłączona lampa nadal jest pod napięciem.');
+  });
+ }
+ const fb=nets();
+ if(s.rcd)LOADS.forEach(ld=>{if(fb(ld.N)!==fb(s.rcd+'.NO'))add('err',ld.dev.title+': przewód N musi być podłączony ZA różnicówką (zacisk N↓). Jeśli N ominie różnicówkę, będzie ona wybijać.')});
+ LOADS.forEach(ld=>{if(ld.PE&&fb(ld.PE)!==fb('sup.PE'))add('err',ld.dev.title+': brak połączenia przewodu ochronnego PE z PE zasilania.')});
+ const roles={};TERMS.forEach(t=>{if(t.hub)return;const r=fb(t.id);(roles[r]=roles[r]||new Set()).add(t.role)});
+ wires.forEach(w=>{const rs=roles[fb(w.a)]||new Set();if(rs.has('N')+rs.has('PE')+rs.has('L')>1)return;
+  const need=rs.has('PE')?'PE':rs.has('N')?'N':'L',c=COLORS.find(x=>x.id===w.c);
+  if(c.role!==need){if(need==='N')add('warn','Przewód neutralny N powinien być niebieski (zły kolor: '+label(w.a)+' ↔ '+label(w.b)+').');
+   else if(need==='PE')add('warn','Przewód ochronny PE musi być żółto-zielony (zły kolor: '+label(w.a)+' ↔ '+label(w.b)+').');
+   else add('warn','Przewód fazowy (też łączeniowy i korespondencyjny) powinien być brązowy, czarny lub szary – nie '+c.name+' ('+label(w.a)+' ↔ '+label(w.b)+').')}});
+ if(s.three){const PC=['br','bk','gr'],PN=['L1 – brązowy','L2 – czarny','L3 – szary'];wires.forEach(w=>{const n=fb(w.a);[0,1,2].forEach(k=>{if(fb('sup.L'+(k+1))===n&&w.c!==PC[k]&&COLORS.find(c=>c.id===w.c).role==='L')add('warn','Oznaczenie faz: '+PN.join(', ')+'. Przewód '+label(w.a)+' ↔ '+label(w.b)+' jest na fazie L'+(k+1)+'.')})})}
+ {const nd=needs(),thin=wires.filter((w,i)=>(w.x||1.5)<nd[i]);if(thin.length)add('err','Za cienki przewód: '+thin.length+' '+(thin.length===1?'przewód ma':'przewody mają')+' 1,5 mm², a obwód zabezpieczony na 16 A wymaga min. 2,5 mm² (np. '+label(thin[0].a)+' ↔ '+label(thin[0].b)+'). Wybierz przekrój 2,5 mm² i poprowadź je ponownie (albo „ustaw na wszystkich”).')}
+ if(!s.board&&wires.some(w=>!TM[w.a].hub&&!TM[w.b].hub))add('info','Wskazówka: w praktyce żyły z osprzętu łączy się w puszce za pomocą złączek, a nie bezpośrednio między urządzeniami.');
+ HUBS.forEach((h,i)=>{const z='Z'+(i+1),n=wires.filter(w=>w.a===z||w.b===z).length;if(n===1)add('info','Złączka '+z+' ma tylko jeden przewód – nic nie łączy.')});
+ if(!out.some(m=>m[0]==='err'||m[0]==='warn')){
+  out.unshift(['ok','✅ Brawo! '+(s.fault?'Usterka naprawiona – instalacja jest poprawna.':'Połączenie jest poprawne.')+' Włącz zasilanie i przetestuj.']);
+  show(out);win();return;
+ }
+ if(out.some(m=>m[0]==='err'||m[0]==='warn')){fails++;snd('err')}
+ show(out);
+}
+function show(list){$('msg').innerHTML=list.map(m=>'<div class="m-'+m[0]+'">'+m[1]+'</div>').join('')}
+
+// ---------- drawing ----------
+function el(tag,a,p){const e=document.createElementNS(NS,tag);for(const k in a)e.setAttribute(k,a[k]);(p||svg).appendChild(e);return e}
+function txt(x,y,s,a,p){const t=el('text',Object.assign({x,y,'font-size':11,'text-anchor':'middle','font-family':'system-ui,sans-serif',fill:'#1d1d1b'},a||{}),p);t.textContent=s;return t}
+function wirePath(a,b,i){const mx=(a.x+b.x)/2,my=(a.y+b.y)/2,dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy)||1,off=12+(i%3)*6;
+ return `M${a.x} ${a.y} Q${mx-dy/len*off} ${my+dx/len*off} ${b.x} ${b.y}`}
+function bulb(cx,cy,on){if(on)el('circle',{cx,cy,r:20,fill:'#ffe066',opacity:.55});
+ el('circle',{cx,cy,r:11,fill:on?'#ffd43b':'#eee',stroke:'#888','stroke-width':1.5});
+ el('path',{d:`M${cx-5} ${cy+3} l3 -5 l2 5 l2 -5 l3 5`,fill:'none',stroke:on?'#a66b00':'#aaa','stroke-width':1.2})}
+
+function draw(){
+ svg.innerHTML='';const s=SC[cur];const ev=power?evaluate([...st,...rs]):null;
+ const VH=s.vh||535;svg.setAttribute('viewBox','0 0 360 '+VH);
+ el('rect',{x:0,y:0,width:360,height:VH,fill:flash?'#ffd6d1':'#faf8f3',rx:10});
+ if(s.areas){s.areas.forEach(a=>{if(a.t==='rect'){el('rect',{x:a.x,y:a.y,width:a.w,height:a.h,rx:8,fill:'#e4e9ee',stroke:'#8a99a8','stroke-width':2.5});txt(a.x+a.w/2,a.y+12,a.label,{'font-size':8.5,fill:'#55606b'})}
+   else{el('circle',{cx:a.cx,cy:a.cy,r:a.r,fill:'#ece7dc',stroke:'#b9b1a1','stroke-width':3});txt(a.cx,a.cy-a.r+16,a.label,{'font-size':8.5,fill:'#6b675f'})}})}
+ else if(s.board){el('rect',{x:55,y:150,width:250,height:220,rx:8,fill:'#e4e9ee',stroke:'#8a99a8','stroke-width':3});
+  el('line',{x1:65,y1:258,x2:295,y2:258,stroke:'#b8c3cd','stroke-width':6});txt(180,166,'Rozdzielnica – szyny i złączki',{'font-size':9.5,fill:'#55606b'})}
+ else{el('circle',{cx:180,cy:258,r:112,fill:'#ece7dc',stroke:'#b9b1a1','stroke-width':3});
+ el('circle',{cx:180,cy:258,r:104,fill:'none',stroke:'#cfc7b7','stroke-width':1,'stroke-dasharray':'4 4'});
+ txt(180,(s.hubs||6)===6?175:168,'Puszka rozgałęźna',{'font-size':9.5,fill:'#6b675f'})}
+ s.dev.forEach(d=>{
+  const [x1,y1,x2,y2]=d.box,top=d.row==='t',cx=(x1+x2)/2;
+  el('rect',{x:x1,y:y1,width:x2-x1,height:y2-y1,rx:10,fill:'#fff',stroke:'#b9b1a1','stroke-width':1.5});
+  txt(cx,top?y1+15:y2-7,d.title,{'font-size':(x2-x1)<80?7:d.title.length>17?8:9.5,'font-weight':600});
+  const vy=top?y1+44:y1+60;
+  const li=LOADS.map((l,i)=>l.dev===d?i:-1).filter(i=>i>=0),on=i=>ev?ev.lit[i]:false;
+  if(d.kind==='supply3'){txt(cx,y1+34,'⚡ przyłącze 3~',{'font-size':9,fill:'#6b675f'});txt(cx,y1+52,'400/230 V',{'font-size':11.5,'font-weight':700,fill:power&&!ev.short?'#c62828':'#999'})}
+  if(d.kind==='socket3'){const o=on(li[0]),ok=o&&ev.dir[li[0]]>0;el('circle',{cx,cy:vy,r:17,fill:'#e8434322',stroke:o?(ok?'#1d8a4a':'#e8590c'):'#c62828','stroke-width':o?3:1.5});
+   [[-8,-5],[8,-5],[-8,6],[8,6],[0,0]].forEach(([dx,dy],k)=>el('circle',{cx:cx+dx,cy:vy+dy,r:k===4?3.2:2.4,fill:'#333'}));if(o)txt(cx+36,vy+4,'400V',{'font-size':9,fill:ok?'#1d8a4a':'#e8590c','font-weight':700})}
+  if(d.kind==='motor'){const o=on(li[0]);el('circle',{cx,cy:vy,r:18,fill:o?'#dff3e6':'#eee',stroke:'#666','stroke-width':1.5});txt(cx,vy+4,'M 3~',{'font-size':9,'font-weight':700});
+   if(o){const g=el('g',{class:'spin'+(ev.dir[li[0]]<0?' spinr':'')});el('path',{d:`M${cx+15} ${vy-10} A18 18 0 0 1 ${cx+15} ${vy+10}`,fill:'none',stroke:'#1d8a4a','stroke-width':2.5},g);el('path',{d:`M${cx-15} ${vy+10} A18 18 0 0 1 ${cx-15} ${vy-10}`,fill:'none',stroke:'#1d8a4a','stroke-width':2.5},g);
+    txt(cx+38,vy+4,ev.dir[li[0]]>0?'↻ P':'↺ L',{'font-size':10,'font-weight':700,fill:'#1d8a4a'})}}
+  if(d.kind==='supply'){txt(cx,y1+36,'⚡ rozdzielnica',{'font-size':9.5,fill:'#6b675f'});txt(cx,y1+54,'230 V',{'font-size':12,'font-weight':700,fill:power&&!ev.short?'#c62828':'#999'})}
+  if(d.kind==='lamp')bulb(cx,vy,on(li[0]));
+  if(d.kind==='chand'){el('path',{d:`M${cx-24} ${vy-12} H${cx+24}`,stroke:'#888','stroke-width':2});bulb(cx-18,vy+2,on(li[0]));bulb(cx+18,vy+2,on(li[1]));
+   txt(cx-18,vy+24,'L1',{'font-size':7,fill:'#888'});txt(cx+18,vy+24,'L2',{'font-size':7,fill:'#888'})}
+  if(d.kind==='socket'){const o=on(li[0]);el('circle',{cx,cy:vy,r:15,fill:'#f5f5f5',stroke:o?'#1d8a4a':'#999','stroke-width':o?3:1.5});
+   el('circle',{cx:cx-6,cy:vy,r:2.6,fill:'#333'});el('circle',{cx:cx+6,cy:vy,r:2.6,fill:'#333'});el('rect',{x:cx-1.5,y:vy-14,width:3,height:6,fill:'#999'});
+   if(o)txt(cx+32,vy+4,'230V',{'font-size':9,fill:'#1d8a4a','font-weight':700})}
+  if(d.kind==='fan'){const o=on(li[0]);el('circle',{cx,cy:vy,r:16,fill:'#f2f2f2',stroke:o?'#1d8a4a':'#999','stroke-width':o?2.5:1.5});
+   const g=el('g',{class:o?'spin':''});for(let k=0;k<3;k++){const a=k*2.094;el('ellipse',{cx:cx+Math.cos(a)*7,cy:vy+Math.sin(a)*7,rx:7,ry:3.2,fill:'#9aa',transform:`rotate(${k*120} ${cx+Math.cos(a)*7} ${vy+Math.sin(a)*7})`},g)}
+   el('circle',{cx,cy:vy,r:2.5,fill:'#555'})}
+  if(d.kind==='bell'){const o=on(li[0]);const g=el('g',{class:o?'shake':''});
+   el('path',{d:`M${cx-12} ${vy+8} Q${cx-12} ${vy-14} ${cx} ${vy-14} Q${cx+12} ${vy-14} ${cx+12} ${vy+8} Z`,fill:o?'#ffd43b':'#ddd',stroke:'#888','stroke-width':1.5},g);
+   el('circle',{cx,cy:vy+11,r:3,fill:'#888'},g);if(o)txt(cx+32,vy+2,'DRYŃ!',{'font-size':9,'font-weight':700,fill:'#c62828'})}
+  if(d.kind==='heater'){const o=on(li[0]);el('rect',{x:cx-20,y:vy-13,width:40,height:26,rx:4,fill:o?'#ffcdb8':'#eee',stroke:o?'#e8590c':'#999','stroke-width':1.5});
+   for(let k=0;k<5;k++)el('line',{x1:cx-14+k*7,y1:vy-9,x2:cx-14+k*7,y2:vy+9,stroke:o?'#e8590c':'#bbb','stroke-width':2});
+   if(o)txt(cx+34,vy+3,'🔥',{'font-size':12})}
+  if(d.kind==='dusk'){const tg0=TOGGLES.findIndex(t=>t.dev===d),night=!!st[tg0];el('circle',{cx:cx-20,cy:(top?y1+40:y1+54),r:9,fill:night?'#2c3e70':'#ffd43b',stroke:'#888'});
+   txt(cx-20,(top?y1+44:y1+58),night?'☾':'☀',{'font-size':10,fill:night?'#fff':'#a66b00'})}
+  if(d.kind==='timer'||d.kind==='bist'){const j=RELAYS.findIndex(r=>r.dev===d),on1=!!rs[j];
+   el('rect',{x:cx-26,y:vy-18,width:52,height:34,rx:4,fill:'#eef0f2',stroke:'#888','stroke-width':1.5});
+   el('circle',{cx:cx-15,cy:vy-7,r:4,fill:on1&&power?'#e53935':'#bbb'});
+   txt(cx+6,vy-4,d.kind==='timer'?'⏱':'⇄',{'font-size':11});
+   let t=power?(on1?'ZAŁ':'WYŁ'):'—';if(d.kind==='timer'&&on1&&power){t='ZAŁ '+Math.max(0,Math.ceil((rsEnd[j]-Date.now())/1000))+'s'}
+   txt(cx,vy+11,t,{'font-size':8.5,'font-weight':700,fill:on1&&power?'#c62828':'#666'})}
+  if(d.kind==='card'){el('rect',{x:cx-34,y:(top?y1+30:y1+44),width:16,height:26,rx:2,fill:'#333'});
+   if(st[TOGGLES.findIndex(t=>t.dev===d)])el('rect',{x:cx-31,y:(top?y1+24:y1+38),width:10,height:22,rx:1.5,fill:'#3a7bd5'})}
+  // toggles
+  const tg=TOGGLES.map((t,i)=>({t,i})).filter(o=>o.t.dev===d);
+  if(tg.length){
+   if(d.kind==='pir'){const det=!!st[tg[0].i],pw=ev&&ev.pirOk[0];el('path',{d:`M${cx-30} ${top?y1+44:y1+52} a10 10 0 0 1 20 0 z`,fill:det?'#ffb3a7':'#e6e6e6',stroke:'#888'});
+    if(pw)el('circle',{cx:cx-20,cy:(top?y1+38:y1+46),r:2,fill:'#e53935'})}
+   const w=tg.length===2?36:((d.kind==='pir'||d.kind==='card'||d.kind==='dusk')?40:50),gap=6,tot=tg.length*w+(tg.length-1)*gap;let x=(d.kind==='pir'||d.kind==='card'||d.kind==='dusk')?cx-8:cx-tot/2;
+   const ry=top?y1+26:y1+46,h=30;
+   tg.forEach(({t,i})=>{const on1=!!st[i],g=el('g',{style:'cursor:pointer'});
+    el('rect',{x,y:ry,width:w,height:h,rx:6,fill:'#f2f2f2',stroke:'#888','stroke-width':1.5},g);
+    el('rect',{x:x+3,y:on1?ry+3:ry+h/2,width:w-6,height:h/2-3,rx:4,fill:on1?'#d9662b':'#bbb'},g);
+    txt(x+w/2,on1?ry+h-5:ry+11,t.sh[st[i]],{'font-size':7.5,'font-weight':700,fill:'#555'},g);
+    el('rect',{x:x-3,y:ry-3,width:w+6,height:h+6,fill:'transparent'},g);
+    g.addEventListener('click',e=>{e.stopPropagation();
+     if(t.dev.kind==='button'){if(st[i])return;st[i]=1;if(power)powerTick();draw();setTimeout(()=>{st[i]=0;if(power)powerTick();draw()},700);return}
+     st[i]=st[i]?0:1;if(power)powerTick();draw();meterShow()});x+=w+gap});
+  }
+ });
+ wires.forEach((w,i)=>{const a=TM[w.a],b=TM[w.b],d=wirePath(a,b,i),c=COLORS.find(x=>x.id===w.c);
+  const live=ev&&!ev.short&&ev.phN.includes(ev.f(w.a));const th=(w.x||1.5)>=2.5?2:0;
+  if(live)el('path',{d,stroke:'#ff3b30','stroke-width':10,fill:'none',opacity:.28});
+  el('path',{d,stroke:'#0003','stroke-width':5.5+th,fill:'none'});
+  el('path',{d,stroke:c.hex,'stroke-width':4+th,fill:'none','stroke-linecap':'round'});
+  if(w.c==='yg')el('path',{d,stroke:'#2e9e3e','stroke-width':4+th,fill:'none','stroke-dasharray':'7 7'});
+  if(live)el('path',{d,stroke:'#fff','stroke-width':1.4,fill:'none','stroke-dasharray':'3 7',class:'live',opacity:.9});
+  const hit=el('path',{d,stroke:'transparent','stroke-width':14,fill:'none',class:'wire'});
+  hit.addEventListener('click',e=>{e.stopPropagation();if(probe)return;snd('del');save();wires.splice(i,1);sel=null;afterChange()})});
+ TERMS.forEach(t=>{const g=el('g',{class:'term'});
+  if(t.hub){const hn=(SC[cur].hubNames||{})[t.id],hl=hn||t.label;el('rect',{x:t.x-15,y:t.y-11,width:30,height:22,rx:4,fill:hn==='N'?'#1f6fd1':hn==='PE'?'#2e9e3e':'#f08a2c',stroke:'#a8551a','stroke-width':1.5},g);
+   txt(t.x,t.y+4,hl,{'font-size':hl.length>2?9:10,'font-weight':700,fill:'#fff'},g);
+   const cap=HUBCAP[t.id]||5,us=wires.filter(w=>w.a===t.id||w.b===t.id).length;for(let k=0;k<cap;k++)el('circle',{cx:t.x-(cap-1)*2.6+k*5.2,cy:t.y+15,r:1.9,fill:k<us?(us>cap?'#c62828':'#333'):'#fff',stroke:'#777','stroke-width':.6},g)}
+  else{el('circle',{cx:t.x,cy:t.y,r:8,fill:'#c9c9c9',stroke:'#555','stroke-width':1.5},g);
+   el('line',{x1:t.x-4,y1:t.y,x2:t.x+4,y2:t.y,stroke:'#555','stroke-width':1.5},g);
+   const top=t.dev.row==='t';
+   txt(t.x,top?t.y-12:t.y+21,t.label,{'font-size':9.5,'font-weight':700,fill:t.role==='N'?'#1f6fd1':t.role==='PE'?'#2e7d32':'#7a4a24'},g)}
+  if(probeP.includes(t.id))el('circle',{cx:t.x,cy:t.y,r:14,fill:'none',stroke:'#1d6fd1','stroke-width':3},g);
+  if(sel===t.id)el('circle',{cx:t.x,cy:t.y,r:13,fill:'none',stroke:'#d9662b','stroke-width':3,class:'sel'},g);
+  el('circle',{cx:t.x,cy:t.y,r:t.hub?17:(t.hr||13),fill:'transparent'},g);
+  g.addEventListener('click',e=>{e.stopPropagation();tapTerm(t.id)})});
+ if(sel)txt(180,VH-6,'Wybrano: '+label(sel)+' → dotknij drugiego zacisku',{'font-size':10,fill:'#d9662b'});
+}
+function tapTerm(id){if(probe){probeTap(id);return}if(!sel){sel=id;draw();return}if(sel===id){sel=null;draw();return}
+ const a=sel,b=id;sel=null;if(!wires.some(w=>(w.a===a&&w.b===b)||(w.a===b&&w.b===a))){
+  const full=[a,b].find(z=>TM[z].hub&&wires.filter(w=>w.a===z||w.b===z).length>=(HUBCAP[z]||5));
+  if(full){snd('err');show([['warn','Złączka '+full+' jest pełna – to WAGO na '+(HUBCAP[full]===3?'3 przewody':'5 przewodów')+'. Użyj innej złączki.']]);draw();return}
+  save();wires.push({a,b,c:color,x:xsel});snd('click')}afterChange()}
+function save(){hist.push(JSON.stringify(wires));if(hist.length>100)hist.shift()}
+function afterChange(){if(power)powerTick();draw();meterShow()}
+function relayStep(){if(!RELAYS.length)return;const e0=evaluate([...st,...rs]);
+ RELAYS.forEach((r,j)=>{const c=e0.coil[j];if(r.dev.kind==='timer'){if(c){rs[j]=1;rsEnd[j]=Date.now()+6000}}else if(c&&!rsPrev[j])rs[j]=rs[j]?0:1;rsPrev[j]=c})}
+function powerTick(){relayStep();let ev=evaluate([...st,...rs]);
+ const ri=TOGGLES.findIndex(t=>t.dev.kind==='rcd');
+ if(ri>=0&&st[ri]){const fb=nets();const leak=ev.nPe||(SC[cur].rcd&&LOADS.some((ld,i)=>ev.lit[i]&&fb(ld.N)!==fb(SC[cur].rcd+'.NO')));
+  if(leak){st[ri]=0;snd('boom');draw();show([['err','⚡ Zadziałał wyłącznik różnicowoprądowy! Prąd wraca inną drogą niż przez różnicówkę (N ominął różnicówkę albo N połączony z PE).']]);return}}
+ if(ev.short){snd('boom');power=false;flash=true;updPow();show([['err','💥 Zwarcie! Zadziałało zabezpieczenie – zasilanie odłączone. Sprawdź, czy faza L nie łączy się z N lub PE.']]);setTimeout(()=>{flash=false;draw()},600);return}
+ const m=[['info','Zasilanie włączone'+(TOGGLES.length?' ('+TOGGLES.map((t,i)=>t.name+': '+t.states[st[i]]).join(', ')+')':'')+'. '+LOADS.map((l,i)=>l.name+': '+loadState(i,ev.lit[i],ev)+(ev.lit[i]?' ✅':'')).join(' · ')]];
+ if(ev.nPe)m.push(['warn','N połączony z PE – w realnej instalacji zadziałałby wyłącznik różnicowoprądowy.']);
+ if(ev.pirOk.some(x=>!x))m.push(['warn','Czujnik nie ma zasilania (L i N).']);
+ show(m)}
+function resetRelays(){rs=RELAYS.map(()=>0);rsPrev=RELAYS.map(()=>false);rsEnd=RELAYS.map(()=>0)}
+function setTimer(){clearInterval(timerIv);timerIv=null;if(power&&RELAYS.some(r=>r.dev.kind==='timer'))timerIv=setInterval(()=>{let ch=false;RELAYS.forEach((r,j)=>{if(r.dev.kind==='timer'&&rs[j]){const c=evaluate([...st,...rs]).coil[j];if(c)rsEnd[j]=Date.now()+6000;if(Date.now()>rsEnd[j]){rs[j]=0;ch=true}}});if(ch)powerTick();draw()},250)}
+function updPow(){if(!power)resetRelays();setTimer();const b=$('bPow');b.classList.toggle('live',power);b.textContent=power?'⏻ Wyłącz zasilanie':'⏻ Włącz zasilanie'}
+
+function fillSelect(){const sel_=$('sel');sel_.innerHTML='';let g=null,lv=null;
+ SC.forEach((s,i)=>{if(s.lvl!==lv){lv=s.lvl;g=document.createElement('optgroup');g.label=lv;sel_.appendChild(g)}
+  const o=document.createElement('option');o.value=i;o.textContent=(done[s.name]?'⭐'.repeat(done[s.name])+' ':'')+(i+1)+'. '+s.name;g.appendChild(o)});sel_.value=cur}
+function prog(){const n=SC.filter(s=>done[s.name]).length,stars=SC.reduce((a,s)=>a+(done[s.name]||0),0);
+ $('progT').textContent='Ukończone: '+n+'/'+SC.length;$('progF').style.width=(100*n/SC.length)+'%';
+ let r=RANKS[0];RANKS.forEach(x=>{if(stars>=x[0])r=x});const nx=RANKS.find(x=>x[0]>stars);
+ $('rank').innerHTML='<span>'+r[2]+' Ranga: <b>'+r[1]+'</b></span><span>⭐ '+stars+'/'+(SC.length*3)+(nx?' · do „'+nx[1]+'”: '+(nx[0]-stars):'')+'</span>'}
+const LVLC={'Podstawy':'#e3f4ea','Średnie':'#fff3df','Zaawansowane':'#fdecea','Hotel i klatka schodowa':'#e6f0fb','Rozdzielnica':'#e4e9ee','Trójfaza 400 V':'#ffe3d6','Projekt mieszkania':'#e8f7f3','Pomiary miernikiem':'#fff7cc','Pomiary ochronne':'#fff7cc','Znajdź błąd':'#f3ecff'};
+function load_(i){usedSol=false;fails=0;hintUsed=false;t0=Date.now();probeP=[];rcdRes=null;cur=i;build();const s=SC[i];wires=s.start?mkW(s.start):[];if(s.thin)wires.forEach((w,k)=>{if(s.thin==='all'||s.thin.includes(k))w.x=1.5});hist=[];sel=null;power=false;st=TOGGLES.map(t=>t.init||0);resetRelays();updPow();
+ $('title').textContent=(i+1)+'. '+s.name;$('lvl').textContent=s.lvl;$('lvl').style.background=LVLC[s.lvl];$('desc').innerHTML=s.desc;$('sel').value=i;
+ head();meterShow();if(s.measure){show([['info','📏 Zadanie pomiarowe. Użyj 🪛 Próbnika (przy włączonym zasilaniu mierzy napięcie, przy wyłączonym – ciągłość), a potem naciśnij „Sprawdź”, żeby odpowiedzieć.']]);draw();return}
+ show([['info',s.fault?'Instalacja jest już podłączona, ale z błędami. Włącz zasilanie, przetestuj, popraw przewody i naciśnij „Sprawdź”.':'Połącz elementy i naciśnij „Sprawdź”.']]);draw()}
+
+// ======== DODATKI ========
+const RANKS=[[0,'Praktykant','🔰'],[10,'Pomocnik elektryka','🧰'],[35,'Elektryk','⚡'],[70,'Starszy elektryk','🔧'],[110,'Mistrz elektryk','🏆'],[160,'Inspektor SEP','👑']];
+let AC=null;
+function snd(t){if(muted)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+ const seq={click:[[880,.05,'square']],del:[[300,.08,'square']],err:[[200,.15,'sawtooth'],[150,.2,'sawtooth']],boom:[[90,.45,'sawtooth'],[60,.3,'sawtooth']],win:[[523,.1,'triangle'],[659,.1,'triangle'],[784,.1,'triangle'],[1046,.25,'triangle']],beep:[[2200,.25,'sine']],probe:[[1500,.06,'sine']]}[t];
+ let tt=AC.currentTime;seq.forEach(([f,d,ty])=>{const o=AC.createOscillator(),g=AC.createGain();o.type=ty;o.frequency.value=f;g.gain.setValueAtTime(.08,tt);g.gain.exponentialRampToValueAtTime(.001,tt+d);o.connect(g);g.connect(AC.destination);o.start(tt);o.stop(tt+d+.02);tt+=d})}catch(e){}}
+function confetti(n){const cs=['#d9662b','#1f6fd1','#e8c900','#2e9e3e','#c62828','#7a4a24'];for(let i=0;i<(n||45);i++){const d=document.createElement('div');d.className='conf';d.style.left=Math.random()*100+'vw';d.style.background=cs[i%cs.length];d.style.animationDelay=(Math.random()*.6)+'s';document.body.appendChild(d);setTimeout(()=>d.remove(),3200)}}
+function fmt(ms){const s=Math.round(ms/1000);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
+function saveAll(){try{localStorage.setItem(K('sym-stars',myNick),JSON.stringify(done));localStorage.setItem(K('sym-best',myNick),JSON.stringify(best));localStorage.setItem(K('sym-exam',myNick),examBest)}catch(e){}}
+function win(){const s=SC[cur];snd('win');
+ if(exam){exam.res.push({n:s.name,p:Math.max(40,100-20*fails)});confetti(20);setTimeout(nextExam,1300);return}
+ if(usedSol){return}
+ const stars=fails===0&&!hintUsed?3:fails<=2?2:1,t=Date.now()-t0;
+ const prev=done[s.name]||0;done[s.name]=Math.max(prev,stars);const rec=!best[s.name]||t<best[s.name];if(rec)best[s.name]=t;saveAll();
+ confetti(stars===3?60:30);
+ $('msg').insertAdjacentHTML('afterbegin','<div class="m-ok" style="font-size:1rem"><b>'+'⭐'.repeat(stars)+'☆'.repeat(3-stars)+'</b> &nbsp;Czas: '+fmt(t)+(rec?' – nowy rekord! 🏁':'')+(stars<3?'<br><small>Trzy gwiazdki: bez podpowiedzi i za pierwszym sprawdzeniem.</small>':'')+'</div>');
+ fillSelect();prog();head();pushScore()}
+function head(){const s=SC[cur],n=done[s.name]||0;$('stars').textContent='★'.repeat(n)+'☆'.repeat(3-n);$('tmr').textContent='⏱ '+fmt(Date.now()-t0)+(best[s.name]?' · rekord '+fmt(best[s.name]):'')}
+// ---- measurement tasks
+function askMeasure(){const m=SC[cur].measure;
+ $('msg').innerHTML='<div class="m-info"><b>📋 Pytanie:</b> '+m.q+'<br><small>Najpierw zmierz próbnikiem, potem wybierz odpowiedź.</small></div>'+m.opts.map((o,i)=>'<button class="qopt" data-i="'+i+'">'+o+'</button>').join('');
+ $('msg').querySelectorAll('.qopt').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;
+  if(i===m.a){b.classList.add('good');$('msg').insertAdjacentHTML('beforeend','<div class="m-ok">✅ Dobrze! '+m.why+'</div>');win()}
+  else{b.classList.add('bad');fails++;snd('err');$('msg').insertAdjacentHTML('beforeend','<div class="m-err">Niestety nie. Zmierz jeszcze raz i spróbuj ponownie.</div>')}})}
+// ---- probe / meter
+// ======== przekroje ========
+function ratingOf(d){const m=(d.title||'').match(/[BC](\d+)/);return m?+m[1]:0}
+function needs(){const s=SC[cur],fb=nets(),r=[];
+ if(!s.board){const a=ratingOf(s.dev[0]);return wires.map(()=>a>=16?2.5:1.5)}
+ const outs=[];s.dev.forEach(d=>{if(d.kind==='mcb')outs.push([fb(d.id+'.O'),ratingOf(d)]);if(d.kind==='mcb3')['2','4','6'].forEach(k=>outs.push([fb(d.id+'.'+k),ratingOf(d)]))});
+ return wires.map(w=>{const n=fb(w.a);let a=0;outs.forEach(([o,v])=>{if(o===n)a=Math.max(a,v)});return a>=16?2.5:1.5})}
+function mkW(list){wires=list.map(([a,b,c])=>({a,b,c,x:1.5}));const nd=needs();wires.forEach((w,i)=>w.x=nd[i]);return wires}
+// ======== miernik (4 tryby) ========
+function rcdTest(p){const ri=TOGGLES.findIndex(t=>t.dev.kind==='rcd');
+ if(!power)return ['– – –','Włącz zasilanie, żeby wykonać test.'];
+ if(ri<0)return ['brak RCD','W tym układzie nie ma wyłącznika różnicowoprądowego.'];
+ if(!st[ri])return ['RCD wył.','Różnicówka jest wyłączona – załącz ją.'];
+ const ev=evaluate([...st,...rs]);if(!ev.phN.includes(ev.f(p)))return ['– – –','Dotknij punktu, na którym jest faza (za różnicówką).'];
+ let ex=[];TOGGLES.forEach((t,i)=>{if(t.dev.kind!=='rcd'&&!t.power)ex.push(...t.pairs[st[i]?1:0])});const f2=nets(ex);
+ if(f2(p)===f2('sup.L'))return ['– – –','To punkt PRZED różnicówką – test trzeba robić za nią (np. w gnieździe).'];
+ const t=SC[cur].rcdT??24;
+ if(t){st[ri]=0;snd('boom');return ['tA = '+t+' ms ✓','IΔn = 30 mA. Różnicówka zadziałała (wymagane ≤ 300 ms) i wyłączyła obwody.']}
+ snd('err');return ['> 300 ms ✗','Różnicówka NIE zadziałała – jest uszkodzona!']}
+function meterShow(){const m=$('meter');m.hidden=!probe;if(!probe)return;const s=SC[cur];
+ const pts=probeP.map(label),ev=evaluate([...st,...rs]),ph=x=>ev.short?-1:ev.phN.indexOf(ev.f(x));
+ const MODES={v:power?'V~ napięcie':'Ω ciągłość',iso:'MΩ izolacja 500 V DC',zs:'Zs pętla zwarcia',rcd:'Test RCD 30 mA'};
+ let val='– – –',note='Dotknij zacisku lub złączki.';
+ if(mmode==='v'){
+  if(probeP.length===1){if(power){const k=ph(probeP[0]);val=k>=0?'⚡ FAZA'+(s.three?' L'+(k+1):''):'brak fazy';note='Próbnik na: '+pts[0]+'. Dotknij drugiego punktu, żeby zmierzyć napięcie.'}else note='Punkt 1: '+pts[0]+'. Dotknij drugiego punktu.'}
+  if(probeP.length===2){const a=ev.f(probeP[0]),b=ev.f(probeP[1]);
+   if(power){const ka=ph(probeP[0]),kb=ph(probeP[1]);let v=0;if(ka>=0&&kb>=0&&ka!==kb)v=400;else if((ka>=0&&kb<0&&(b===ev.N||b===ev.PE))||(kb>=0&&ka<0&&(a===ev.N||a===ev.PE)))v=230;val=v+' V'}
+   else{const c=a===b;val=c?'0.2 Ω 🔊':'OL';if(c)snd('beep')}
+   note=pts[0]+'  ↔  '+pts[1]}}
+ if(mmode==='iso'){
+  if(power){val='⚠ WYŁĄCZ';note='Pomiar izolacji robi się BEZ napięcia (miernik podaje 500 V DC).'}
+  else if(probeP.length===1)note='Punkt 1: '+pts[0]+'. Dotknij drugiego punktu (np. L i PE).';
+  else if(probeP.length===2){const a=ev.f(probeP[0]),b=ev.f(probeP[1]);note=pts[0]+'  ↔  '+pts[1];
+   if(a===b){val='0,00 MΩ';note+=' – te punkty są połączone ze sobą (to nie izolacja).'}
+   else{const lk=(s.leak||[]).find(([x,y])=>{const fx=ev.f(x),fy=ev.f(y);return (fx===a&&fy===b)||(fx===b&&fy===a)});
+    if(lk){val=String(lk[2]).replace('.',',')+' MΩ ✗';note+=' – za mało! Wymagane ≥ 1 MΩ: uszkodzona izolacja.';snd('err')}else{val='> 999 MΩ ✓';note+=' – izolacja dobra.'}}}}
+ if(mmode==='zs'){
+  if(!power){val='– – –';note='Pętlę zwarcia mierzy się POD napięciem – włącz zasilanie.'}
+  else if(probeP.length===1)note='Punkt 1: '+pts[0]+'. Dotknij drugiego punktu (faza i PE).';
+  else if(probeP.length===2){const ka=ph(probeP[0]),kb=ph(probeP[1]),a=ev.f(probeP[0]),b=ev.f(probeP[1]);note=pts[0]+'  ↔  '+pts[1];
+   if((ka>=0&&(b===ev.PE||b===ev.N))||(kb>=0&&(a===ev.PE||a===ev.N))){const z=s.zs||0.62;val='Zs = '+z.toFixed(2).replace('.',',')+' Ω';note+=' · Ik ≈ '+Math.round(230/z)+' A. Warunek: B10 ≤ 4,60 Ω, B16 ≤ 2,87 Ω.'}
+   else{val='– – –';note+=' – brak pętli: mierz między fazą a PE.'}}}
+ if(mmode==='rcd'){if(rcdRes){val=rcdRes[0];note=rcdRes[1]}else note='Dotknij punktu z fazą za różnicówką (np. L gniazda).'}
+ m.innerHTML='<div style="display:flex;justify-content:space-between"><b>🪛 MIERNIK</b><small>'+MODES[mmode]+'</small></div><div class="lcd">'+val+'</div><small>'+note+'</small><div class="mm">'+[['v','Multimetr'],['iso','Izolacja'],['zs','Pętla Zs'],['rcd','Test RCD']].map(([k,n])=>'<button data-m="'+k+'" class="'+(mmode===k?'on':'')+'">'+n+'</button>').join('')+'</div>'}
+function probeTap(id){snd('probe');if(mmode==='rcd'){probeP=[id];rcdRes=rcdTest(id);if(power)powerTick();meterShow();draw();return}probeP=probeP.length>=2?[id]:[...probeP,id];meterShow();draw()}
+// ======== ranking ========
+let RDB=null,UID=null,myNick='',examBest=0,lastPush=0;try{myNick=localStorage.getItem('sym-nick')||'';examBest=+(localStorage.getItem(K('sym-exam',myNick))||0)}catch(e){}
+function esc(x){return String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function myStats(){return {stars:SC.reduce((a,s)=>a+(done[s.name]||0),0),done:SC.filter(s=>done[s.name]).length,exam:examBest}}
+async function pushScore(manual){if(!RDB){if(myNick)localSave();return}if(!UID||!myNick)return;if(!manual&&Date.now()-lastPush<4000)return;lastPush=Date.now();
+ const st_=myStats();try{await RDB.doc('ranking/'+UID).set({nick:myNick.slice(0,20),stars:st_.stars,done:st_.done,exam:st_.exam,t:Date.now()});if(manual)$('rkMsg').textContent='✅ Zapisano!'}
+ catch(e){$('rkMsg').textContent=e&&e.code==='invalid_argument'?'Nie możesz zapisywać – poproś właściciela strony o dostęp „Współtwórca”.':'Nie udało się zapisać, spróbuj później.'}}
+function renderRank(docs){const rows=docs.map((d,i)=>{const v=d.data()||{};return '<tr class="'+(d.id===UID?'me':'')+'"><td>'+(i<3?['🥇','🥈','🥉'][i]:i+1)+'</td><td>'+esc(v.nick||'?')+'</td><td>⭐ '+(+v.stars||0)+'</td><td>✓ '+(+v.done||0)+'</td><td>'+(v.exam?'🎓 '+(+v.exam):'–')+'</td></tr>'}).join('');
+ $('rkList').innerHTML=docs.length?'<table class="rk"><tr><th>#</th><th>Ksywka</th><th>Gwiazdki</th><th>Zadania</th><th>Egzamin</th></tr>'+rows+'</table>':'<p class="hint">Ranking jest pusty – bądź pierwszy!</p>'}
+function lsGet(k,d){try{return JSON.parse(localStorage.getItem(k)||d)}catch(e){return JSON.parse(d)}}
+function localSave(){const pl=lsGet('sym-players','{}');pl[myNick]=myStats();try{localStorage.setItem('sym-players',JSON.stringify(pl))}catch(e){}if($('rkList'))localTable()}
+function localTable(){const pl=lsGet('sym-players','{}'),arr=Object.entries(pl).sort((a,b)=>b[1].stars-a[1].stars);
+ $('rkList').innerHTML=arr.length?'<table class="rk"><tr><th>#</th><th>Gracz</th><th>Gwiazdki</th><th>Zadania</th><th>Egzamin</th></tr>'+arr.map(([n,v],i)=>'<tr class="'+(n===myNick?'me':'')+'"><td>'+(i<3?['🥇','🥈','🥉'][i]:i+1)+'</td><td>'+esc(n)+'</td><td>⭐ '+(+v.stars||0)+'</td><td>✓ '+(+v.done||0)+'</td><td>'+(v.exam?'🎓 '+v.exam:'–')+'</td></tr>').join('')+'</table>':'<p class="hint">Brak graczy – wpisz ksywkę i zacznij!</p>'}
+function switchPlayer(n){if(myNick)localSave();myNick=n;try{localStorage.setItem('sym-nick',n)}catch(e){}
+ done=lsGet(K('sym-stars',n),'{}');best=lsGet(K('sym-best',n),'{}');try{examBest=+(localStorage.getItem(K('sym-exam',n))||0)}catch(e){examBest=0}
+ localSave();fillSelect();prog();head()}
+function localRank(){$('rankBox').innerHTML='<p class="hint" style="margin:4px 0">Ranking graczy na tym urządzeniu – każdy ma własne postępy. (Wspólny ranking przez internet działa w wersji na claude.ai.)</p><div class="bar" style="margin:6px 0"><input class="inp" id="rkNick" maxlength="20" placeholder="Ksywka gracza"><button class="btn pri" id="rkSave">Graj jako</button></div><div id="rkMsg" class="hint" style="margin:0"></div><div id="rkList"></div>';
+ $('rkNick').value=myNick;$('rkSave').onclick=()=>{const n=$('rkNick').value.trim().slice(0,20);if(!n){$('rkMsg').textContent='Wpisz ksywkę.';return}
+  if(n!==myNick){switchPlayer(n);$('rkMsg').textContent='Gracz: '+n+' – postępy wczytane.'}else{localSave();$('rkMsg').textContent='✅ Zapisano.'}};
+ if(myNick)localSave();else localTable()}
+async function rankInit(){let db=null,u=null;try{if(typeof claude!=='undefined'){db=await claude.use('db');u=await claude.use('user')}}catch(e){}
+ if(!db){localRank();return}
+ RDB=db;try{UID=u?await u.id():null}catch(e){}
+ $('rankBox').innerHTML='<div class="bar" style="margin:6px 0"><input class="inp" id="rkNick" maxlength="20" placeholder="Twoja ksywka (np. Kuba)"><button class="btn pri" id="rkSave">Zapisz wynik</button></div><div id="rkMsg" class="hint" style="margin:0"></div><div id="rkList"><p class="hint">Ładowanie…</p></div>';
+ $('rkNick').value=myNick;$('rkSave').onclick=()=>{myNick=$('rkNick').value.trim().slice(0,20);if(!myNick){$('rkMsg').textContent='Wpisz ksywkę.';return}try{localStorage.setItem('sym-nick',myNick)}catch(e){}if(!UID){$('rkMsg').textContent='Zaloguj się, żeby zapisać wynik.';return}pushScore(true)};
+ const tm=setTimeout(()=>{$('rkList').innerHTML='<p class="hint">Nie udało się jeszcze wczytać rankingu.</p>'},10000);
+ try{RDB.collection('ranking').orderBy('stars','desc').limit(50).onSnapshot(snap=>{if(!snap.metadata.fromCache)clearTimeout(tm);renderRank(snap.docs)},e=>{clearTimeout(tm);$('rkList').innerHTML='<p class="hint">Ranking jest teraz niedostępny.</p>'})}catch(e){clearTimeout(tm)}}
+// ---- exam
+function nextExam(){exam.k++;if(exam.k>=exam.list.length){endExam();return}load_(exam.list[exam.k]);examBar()}
+function examBar(){if(!exam)return;$('examBar').innerHTML='<span>🎓 Egzamin: zadanie <b>'+(exam.k+1)+'/'+exam.list.length+'</b></span><span>⏱ '+fmt(Date.now()-exam.t)+'</span>'}
+function startExam(){const idx=[...SC.keys()].sort(()=>Math.random()-.5).slice(0,5);exam={list:idx,k:0,res:[],t:Date.now()};
+ ['bHint','bSol','bExam'].forEach(i=>$(i).hidden=true);$('bSkip').hidden=false;['sel','bPrev','bNext'].forEach(i=>$(i).disabled=true);$('examBar').hidden=false;load_(idx[0]);examBar()}
+function endExam(){const r=exam.res,avg=r.reduce((a,x)=>a+x.p,0)/exam.list.length,t=Date.now()-exam.t;
+ const g=avg>=95?[6,'celujący']:avg>=85?[5,'bardzo dobry']:avg>=70?[4,'dobry']:avg>=55?[3,'dostateczny']:avg>=40?[2,'dopuszczający']:[1,'niedostateczny'];
+ exam=null;['bHint','bSol','bExam'].forEach(i=>$(i).hidden=false);$('bSkip').hidden=true;['sel','bPrev','bNext'].forEach(i=>$(i).disabled=false);$('examBar').hidden=true;
+ $('msg').innerHTML='<div class="m-info result"><div>🎓 Wynik egzaminu</div><div class="big">'+g[0]+'</div><div><b>'+g[1]+'</b> · '+Math.round(avg)+'% · czas '+fmt(t)+'</div><div style="margin-top:6px;font-size:.82rem">'+r.map(x=>x.n+': '+x.p+'%').join('<br>')+(r.length<5?'<br>Pominięte: '+(5-r.length):'')+'</div></div>';
+ if(g[0]>examBest){examBest=g[0];saveAll();pushScore()}
+ if(g[0]>=4)confetti(80);snd(g[0]>=3?'win':'err')}
+// ---- quiz
+const QUIZ=[
+['Który przewód przerywa łącznik?',['Fazowy L','Neutralny N','Ochronny PE','Dowolny'],0,'Łącznik zawsze przerywa fazę – po wyłączeniu odbiornik nie jest pod napięciem.'],
+['Jaki kolor ma przewód ochronny PE?',['Niebieski','Brązowy','Żółto-zielony','Czarny'],2,'PE jest zawsze żółto-zielony i nie może pełnić innej funkcji.'],
+['Jaki kolor ma przewód neutralny N?',['Niebieski','Szary','Brązowy','Żółto-zielony'],0,'N jest niebieski (jasnoniebieski).'],
+['Ile łączników schodowych potrzeba do sterowania lampą z 2 miejsc?',['1','2','3','2 krzyżowe'],1,'Dwa łączniki schodowe.'],
+['Do sterowania z 3 miejsc potrzebujesz:',['3 schodowe','2 schodowe + 1 krzyżowy','3 krzyżowe','1 świecznikowy'],1,'Schodowe na końcach, krzyżowe pośrodku.'],
+['Typowe napięcie w gnieździe w Polsce to:',['110 V','230 V','400 V','12 V'],1,'230 V między L i N (400 V jest między fazami w sieci trójfazowej).'],
+['Typowy wyłącznik dla obwodu gniazd to:',['B6','B10','B16','C63'],2,'Gniazda zwykle B16, oświetlenie B10.'],
+['Wyłącznik różnicowoprądowy chroni przede wszystkim przed:',['Przeciążeniem','Porażeniem prądem','Przepięciem od burzy','Spadkiem napięcia'],1,'Wykrywa upływ prądu (np. przez człowieka) i wyłącza obwód – typowo 30 mA.'],
+['Czy PE może przechodzić przez różnicówkę?',['Tak, zawsze','Nie, nigdy','Tylko w łazience','Tylko z N'],1,'Przez różnicówkę przechodzą L i N, a PE nigdy.'],
+['Co pokaże omomierz na zamkniętym łączniku?',['OL','≈0 Ω','230 V','Błąd'],1,'Zamknięty styk = bardzo mała rezystancja.'],
+['Przed rozpoczęciem pracy przy instalacji należy:',['Wyłączyć łącznik światła','Wyłączyć zasilanie i sprawdzić brak napięcia','Założyć rękawice i pracować pod napięciem','Zmierzyć rezystancję żarówki'],1,'Wyłączyć, zabezpieczyć przed włączeniem i sprawdzić brak napięcia.'],
+['Czujnik ruchu potrzebuje do pracy:',['Tylko L','L i N','Tylko PE','Baterii'],1,'Elektronika czujnika jest zasilana z L i N.'],
+['Do czego służy przekaźnik bistabilny?',['Do opóźnienia wyłączenia','Do sterowania światłem z wielu przycisków','Do ochrony przed porażeniem','Do pomiaru prądu'],1,'Każdy impuls z przycisku zmienia jego stan.'],
+['Automat schodowy po wciśnięciu przycisku:',['Zapala światło na określony czas','Zapala na stałe','Wyłącza obwód','Mierzy temperaturę'],0,'To przekaźnik czasowy – po czasie sam gasi światło.'],
+['Mostek między N a PE w puszce (instalacja z RCD) spowoduje:',['Nic','Wybijanie różnicówki','Jaśniejsze światło','Oszczędność prądu'],1,'Część prądu wraca przez PE, różnicówka widzi upływ i wyłącza.'],
+['Jakie napięcie jest między dwiema fazami (L1–L2)?',['230 V','400 V','0 V','110 V'],1,'Napięcie międzyfazowe to 400 V (√3 × 230 V).'],
+['Jak zmienić kierunek obrotów silnika trójfazowego?',['Zamienić N z PE','Zamienić dowolne dwie fazy','Odłączyć jedną fazę','Nie da się'],1,'Zamiana dwóch faz odwraca kierunek pola wirującego.'],
+['Minimalny przekrój przewodu Cu dla obwodu gniazd B16 to zwykle:',['1 mm²','1,5 mm²','2,5 mm²','10 mm²'],2,'Dla 16 A stosuje się 2,5 mm², dla B10 (oświetlenie) 1,5 mm².'],
+['Wymagana rezystancja izolacji obwodu 230 V to co najmniej:',['1 kΩ','1 MΩ','1 Ω','100 Ω'],1,'Przy napięciu probierczym 500 V DC wynik ma być ≥ 1 MΩ.'],
+['Kolor przewodu fazy L2 w instalacji trójfazowej:',['Brązowy','Czarny','Szary','Niebieski'],1,'L1 brązowy, L2 czarny, L3 szary.'],
+['Pomiar impedancji pętli zwarcia sprawdza:',['Czy wyłącznik zadziała szybko przy zwarciu','Jasność żarówek','Moc silnika','Kolor przewodów'],0,'Mała impedancja = duży prąd zwarcia = szybkie zadziałanie zabezpieczenia.']];
+let qOrd=[],qi=0,qScore=0;
+function quizStart(){qOrd=[...QUIZ.keys()].sort(()=>Math.random()-.5);qi=0;qScore=0;quizShow()}
+function quizShow(){const z=$('quiz');if(qi>=qOrd.length){z.innerHTML='<div class="result"><div class="big">'+qScore+'/'+QUIZ.length+'</div><div>'+(qScore>=13?'Świetnie! ⚡':qScore>=9?'Dobrze, tak trzymaj!':'Warto powtórzyć zasady 📘')+'</div><button class="btn pri" id="qAgain" style="margin-top:8px">Jeszcze raz</button></div>';if(qScore>=13)confetti(50);$('qAgain').onclick=quizStart;return}
+ const [q,o,a,w]=QUIZ[qOrd[qi]];z.innerHTML='<p style="font-size:.8rem;color:#6b675f;margin:8px 0 2px">Pytanie '+(qi+1)+'/'+QUIZ.length+' · wynik '+qScore+'</p><p style="font-weight:600;margin:4px 0">'+q+'</p>'+o.map((x,i)=>'<button class="qopt" data-i="'+i+'">'+x+'</button>').join('')+'<div id="qExp"></div>';
+ z.querySelectorAll('.qopt').forEach(b=>b.onclick=()=>{if(z.dataset.lock==='1')return;z.dataset.lock='1';const i=+b.dataset.i;z.querySelectorAll('.qopt')[a].classList.add('good');
+  if(i===a){qScore++;snd('click')}else{b.classList.add('bad');snd('err')}
+  $('qExp').innerHTML='<div class="msg"><div class="'+(i===a?'m-ok':'m-err')+'">'+(i===a?'✅ ':'❌ ')+w+'</div></div><button class="btn" id="qNext">Dalej ▶</button>';
+  $('qNext').onclick=()=>{z.dataset.lock='0';qi++;quizShow()}})}
+const GLOSS=[['L – przewód fazowy','Przewód pod napięciem 230 V względem N i ziemi. Kolor brązowy, czarny lub szary.'],['N – przewód neutralny','Przewód powrotny prądu. Kolor niebieski.'],['PE – przewód ochronny','Łączy metalowe obudowy z uziemieniem. Kolor żółto-zielony. Nie płynie nim prąd w normalnej pracy.'],['Puszka rozgałęźna','Puszka, w której łączy się przewody od zasilania, łączników i odbiorników.'],['Złączka (np. WAGO)','Element do łączenia kilku żył bez skręcania.'],['Przewód łączeniowy','Przewód między łącznikiem a lampą – „przełączana faza”.'],['Przewody korespondencyjne','Dwa przewody między łącznikami schodowymi/krzyżowymi.'],['Łącznik świecznikowy','Podwójny łącznik z jednym wejściem L i dwoma wyjściami.'],['Łącznik schodowy','Przełącznik: wspólny zacisk L łączy się z wyjściem 1 albo 2.'],['Łącznik krzyżowy','Zamienia ze sobą dwa przewody korespondencyjne – do sterowania z 3 i więcej miejsc.'],['Wyłącznik nadprądowy (B10, B16)','„Bezpiecznik” w rozdzielnicy – wyłącza przy przeciążeniu i zwarciu. Liczba to prąd znamionowy w amperach.'],['Wyłącznik różnicowoprądowy (RCD)','„Różnicówka” – porównuje prąd w L i N; przy różnicy (np. 30 mA) wyłącza. Chroni ludzi przed porażeniem.'],['Próbnik napięcia','Pokazuje, czy na danym punkcie jest faza.'],['Multimetr','Miernik napięcia (V), rezystancji (Ω) i ciągłości obwodu.'],['OL','Wskazanie miernika „poza zakresem” – w trybie Ω oznacza przerwę.'],['Automat schodowy','Przekaźnik czasowy – po impulsie z przycisku włącza światło na określony czas.'],['Przekaźnik bistabilny','Każdy impuls przełącza go: włącz/wyłącz. Sterowanie z wielu przycisków.'],['SEP','Świadectwo kwalifikacyjne uprawniające do prac przy instalacjach elektrycznych.'],
+['Napięcie międzyfazowe','Napięcie między dwiema fazami sieci trójfazowej – 400 V.'],['Kolejność faz','Kolejność L1-L2-L3 decyduje o kierunku obrotów silnika (pole wirujące w prawo).'],['Rezystancja izolacji','Opór między przewodami, mierzony bez napięcia miernikiem 500 V DC. Ma być ≥ 1 MΩ.'],['Impedancja pętli zwarcia (Zs)','Opór drogi prądu zwarciowego. Im mniejsza, tym szybciej zadziała wyłącznik.'],['Przekrój przewodu','Grubość żyły w mm². 1,5 mm² do 10 A (światło), 2,5 mm² do 16 A (gniazda).'],['WAGO 221','Popularne złączki dźwigniowe na 2, 3 lub 5 przewodów.']];
+
+$('bProbe').onclick=()=>{probe=!probe;probeP=[];sel=null;$('bProbe').classList.toggle('on',probe);meterShow();draw()};
+$('bExam').onclick=startExam;
+$('meter').onclick=e=>{const b=e.target.closest('[data-m]');if(b){mmode=b.dataset.m;probeP=[];rcdRes=null;meterShow();draw()}};
+document.querySelectorAll('.btn.xs[data-x]').forEach(b=>b.onclick=()=>{xsel=+b.dataset.x;document.querySelectorAll('.btn.xs[data-x]').forEach(x=>x.classList.toggle('on',x===b))});
+$('bAllX').onclick=()=>{if(!wires.length)return;save();wires.forEach(w=>w.x=xsel);snd('click');draw();show([['info','Wszystkie przewody mają teraz przekrój '+String(xsel).replace('.',',')+' mm².']])};
+$('qn').textContent=QUIZ.length;rankInit();
+try{if(location.protocol==='https:'&&!/claude/.test(location.hostname)){const l=document.createElement('link');l.rel='manifest';l.href='manifest.webmanifest';document.head.appendChild(l);
+ const t=document.createElement('link');t.rel='apple-touch-icon';t.href='icon-192.png';document.head.appendChild(t);
+ if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{})}}catch(e){}
+$('bSkip').onclick=()=>{if(exam){exam.res.push({n:SC[cur].name,p:0});nextExam()}};
+$('bMute').onclick=()=>{muted=!muted;$('bMute').textContent=muted?'🔇 Dźwięk':'🔊 Dźwięk'};
+$('gloss').innerHTML=GLOSS.map(([a,b])=>'<dt>'+a+'</dt><dd>'+b+'</dd>').join('');
+setInterval(()=>{head();examBar()},1000);
+quizStart();
+COLORS.forEach(c=>{const b=document.createElement('button');b.className='col'+(c.id===color?' on':'');b.title=c.name;b.setAttribute('aria-label',c.name);
+ b.style.background=c.id==='yg'?'repeating-linear-gradient(45deg,#e8c900 0 6px,#2e9e3e 6px 12px)':c.hex;
+ b.onclick=()=>{color=c.id;[...$('colors').children].forEach(x=>x.classList.remove('on'));b.classList.add('on')};$('colors').appendChild(b)});
+$('sel').onchange=e=>load_(+e.target.value);
+$('bPrev').onclick=()=>load_((cur+SC.length-1)%SC.length);
+$('bNext').onclick=()=>load_((cur+1)%SC.length);
+$('bCheck').onclick=check;
+$('bPow').onclick=()=>{power=!power;updPow();if(power)powerTick();else show([['info','Zasilanie wyłączone.']]);draw();meterShow()};
+$('bUndo').onclick=()=>{if(hist.length){wires=JSON.parse(hist.pop());sel=null;afterChange()}};
+$('bClear').onclick=()=>{if(wires.length){save();wires=[];sel=null;afterChange()}};
+$('bHint').onclick=()=>{hintUsed=true;show([['hint','❓ '+SC[cur].hint]])};
+$('bSol').onclick=()=>{usedSol=true;if(SC[cur].measure){const m=SC[cur].measure;show([['hint','Odpowiedź: <b>'+m.opts[m.a]+'</b>. '+m.why]]);return}save();mkW(SC[cur].sol);sel=null;afterChange();show([['info','Pokazano przykładowe poprawne połączenie. Włącz zasilanie i przełączaj łączniki. (Zadanie zaliczysz, łącząc je samodzielnie.)']])};
+svg.addEventListener('click',()=>{if(sel){sel=null;draw()}});
+$('cnt').textContent=SC.length;fillSelect();prog();load_(0);
+</script>
+</body>
+</html>
